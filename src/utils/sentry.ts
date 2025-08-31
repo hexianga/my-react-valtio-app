@@ -5,35 +5,47 @@ import * as Sentry from '@sentry/react';
  * 包含错误捕获、性能监控、页面 PV 统计等功能
  */
 export const initSentry = () => {
-  // 注意：在生产环境中需要替换为实际的 DSN
-  Sentry.init({
-    dsn: process.env.REACT_APP_SENTRY_DSN,
-    integrations: [Sentry.browserTracingIntegration()],
-    
-    // 性能监控配置
-    tracesSampleRate: 1.0, // 采样率，生产环境建议设置为 0.1
-    replaysSessionSampleRate: 0.1, // 会话重放采样率
-    replaysOnErrorSampleRate: 1.0, // 错误时重放采样率
-    
-    // 环境配置
-    environment: process.env.NODE_ENV,
-    
-    // 错误过滤
-    beforeSend(event) {
-      // 过滤掉一些不需要的错误
-      if (event.exception) {
-        const exception = event.exception.values?.[0];
-        if (exception?.type === 'ChunkLoadError') {
-          return null; // 忽略代码分割加载错误
+  // 检查是否有 DSN
+  const dsn = process.env.REACT_APP_SENTRY_DSN || 'https://37efb8fa44b0700ab7f0227c85b762ee@o1048168.ingest.us.sentry.io/4509938828312576';
+  
+  if (!dsn) {
+    console.warn('Sentry DSN 未配置，错误监控将不会工作');
+    return;
+  }
+
+  try {
+    Sentry.init({
+      dsn,
+      integrations: [Sentry.browserTracingIntegration()],
+      
+      // 性能监控配置
+      tracesSampleRate: 1.0, // 采样率，生产环境建议设置为 0.1
+      replaysSessionSampleRate: 0.1, // 会话重放采样率
+      replaysOnErrorSampleRate: 1.0, // 错误时重放采样率
+      
+      // 环境配置
+      environment: process.env.NODE_ENV,
+      
+      // 错误过滤
+      beforeSend(event) {
+        // 过滤掉一些不需要的错误
+        if (event.exception) {
+          const exception = event.exception.values?.[0];
+          if (exception?.type === 'ChunkLoadError') {
+            return null; // 忽略代码分割加载错误
+          }
         }
-      }
-      return event;
-    },
+        return event;
+      },
+      
+      // 启用调试模式（开发环境）
+      debug: process.env.NODE_ENV === 'development',
+    });
     
-    // 启用调试模式（开发环境）
-    // debug: process.env.NODE_ENV === 'development',
-    debug: true
-  });
+    console.log('✅ Sentry 初始化成功');
+  } catch (error) {
+    console.error('❌ Sentry 初始化失败:', error);
+  }
 };
 
 /**

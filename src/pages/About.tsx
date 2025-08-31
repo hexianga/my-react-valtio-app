@@ -1,5 +1,5 @@
 import React from 'react';
-import { captureMessage } from '../utils/sentry';
+import { captureMessage, captureError } from '../utils/sentry';
 
 /**
  * 关于页面组件
@@ -7,13 +7,25 @@ import { captureMessage } from '../utils/sentry';
  */
 const About: React.FC = () => {
   const handleTestError = () => {
-    // 测试 Sentry 错误捕获
-    throw new Error('这是一个测试错误，用于验证 Sentry 错误捕获功能');
+    try {
+      // 测试 Sentry 错误捕获
+      throw new Error('这是一个测试错误，用于验证 Sentry 错误捕获功能');
+    } catch (error) {
+      // 手动捕获错误
+      captureError(error as Error, {
+        context: '测试错误按钮点击',
+        userId: 'test-user',
+        timestamp: new Date().toISOString(),
+      });
+      console.log('错误已发送到 Sentry');
+      alert('测试错误已发送到 Sentry，请检查控制台和 Sentry 面板');
+    }
   };
 
   const handleTestMessage = () => {
     // 测试 Sentry 消息捕获
     captureMessage('用户点击了测试消息按钮', 'info');
+    console.log('消息已发送到 Sentry');
     alert('消息已发送到 Sentry，请查看控制台');
   };
 
@@ -25,8 +37,18 @@ const About: React.FC = () => {
     setTimeout(() => {
       const duration = Date.now() - startTime;
       captureMessage(`模拟操作耗时: ${duration}ms`, 'warning');
+      console.log(`性能测试完成，耗时: ${duration}ms`);
       alert(`模拟操作完成，耗时: ${duration}ms`);
     }, 2000);
+  };
+
+  const handleTestUnhandledError = () => {
+    // 测试未处理的错误
+    console.log('即将触发未处理的错误...');
+    setTimeout(() => {
+      // 这会触发 Sentry 的自动错误捕获
+      throw new Error('这是一个未处理的错误，应该被 Sentry 自动捕获');
+    }, 1000);
   };
 
   return (
@@ -119,7 +141,7 @@ const About: React.FC = () => {
             您可以在 Sentry 控制台中查看结果。
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
               onClick={handleTestMessage}
               className="btn btn-primary"
@@ -139,6 +161,13 @@ const About: React.FC = () => {
               className="btn bg-red-600 hover:bg-red-700 text-white"
             >
               测试错误捕获
+            </button>
+            
+            <button
+              onClick={handleTestUnhandledError}
+              className="btn bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              测试未处理错误
             </button>
           </div>
         </div>

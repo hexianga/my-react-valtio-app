@@ -12,12 +12,16 @@ const isProduction = process.env.NODE_ENV === 'production';
 const env = dotenv.config().parsed || {};
 console.log(env);
 
+// 确保路径正确
+const publicPath = path.resolve(__dirname, 'public');
+const templatePath = path.join(publicPath, 'index.html');
+
 module.exports = {
   entry: './src/index.tsx',
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'dist/static'),
     filename: isProduction ? '[name].[contenthash].js' : '[name].js',
-    publicPath: '/',
+    publicPath: '/static/',
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
@@ -66,8 +70,8 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      template: './public/index.html',
-      filename: 'index.html',
+      template: templatePath,
+      filename: '../index.html', // 输出到 dist 根目录
     }),
     // 定义环境变量
     new webpack.DefinePlugin({
@@ -108,7 +112,7 @@ module.exports = {
   },
   devServer: {
     static: {
-      directory: path.join(__dirname, 'public'),
+      directory: publicPath,
     },
     compress: true,
     port: 3001,
