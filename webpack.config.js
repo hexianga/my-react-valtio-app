@@ -21,7 +21,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist/static'),
     filename: isProduction ? '[name].[contenthash].js' : '[name].js',
-    publicPath: '/static/',
+    publicPath: isProduction ? '/static/' : '/', // 开发环境使用根路径，生产环境使用 /static/
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
@@ -71,7 +71,7 @@ module.exports = {
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       template: templatePath,
-      filename: '../index.html', // 输出到 dist 根目录
+      filename: isProduction ? '../index.html' : 'index.html', // 开发环境输出到 static 目录，生产环境输出到根目录
     }),
     // 定义环境变量
     new webpack.DefinePlugin({
