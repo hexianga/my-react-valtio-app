@@ -6,10 +6,8 @@ import * as Sentry from '@sentry/react';
  */
 export const initSentry = () => {
   // 注意：在生产环境中需要替换为实际的 DSN
-  const SENTRY_DSN = process.env.REACT_APP_SENTRY_DSN || 'your-sentry-dsn-here';
-  
   Sentry.init({
-    dsn: SENTRY_DSN,
+    dsn: process.env.REACT_APP_SENTRY_DSN,
     integrations: [Sentry.browserTracingIntegration()],
     
     // 性能监控配置
@@ -33,7 +31,8 @@ export const initSentry = () => {
     },
     
     // 启用调试模式（开发环境）
-    debug: process.env.NODE_ENV === 'development',
+    // debug: process.env.NODE_ENV === 'development',
+    debug: true
   });
 };
 

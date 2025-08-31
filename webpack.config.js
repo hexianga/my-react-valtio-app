@@ -10,6 +10,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // 加载环境变量
 const env = dotenv.config().parsed || {};
+console.log(env);
 
 module.exports = {
   entry: './src/index.tsx',
