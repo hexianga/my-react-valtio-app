@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 import { useRequest } from 'ahooks';
-import { appState } from '@/store';
-import { captureError } from '@/utils/sentry';
+import { appState, actions } from '../store';
+import { captureError } from '../utils/sentry';
 
 /**
  * 使用应用状态
@@ -18,12 +18,11 @@ export const useAppState = () => {
  */
 export const useTheme = () => {
   const { theme } = useAppState();
-  const { toggleTheme, setTheme } = appState;
   
   return {
     theme,
-    toggleTheme,
-    setTheme,
+    toggleTheme: actions.toggleTheme,
+    setTheme: actions.setTheme,
   };
 };
 
@@ -33,13 +32,12 @@ export const useTheme = () => {
  */
 export const useAuth = () => {
   const { user, isAuthenticated } = useAppState();
-  const { setUser, clearUser } = appState;
   
   return {
     user,
     isAuthenticated,
-    setUser,
-    clearUser,
+    setUser: actions.setUser,
+    clearUser: actions.clearUser,
   };
 };
 
@@ -227,7 +225,7 @@ export const useScrollPosition = (element?: HTMLElement | null) => {
           x: window.pageXOffset,
           y: window.pageYOffset,
         });
-      } else {
+      } else if (targetElement instanceof HTMLElement) {
         setScrollPosition({
           x: targetElement.scrollLeft,
           y: targetElement.scrollTop,

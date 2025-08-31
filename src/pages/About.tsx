@@ -1,5 +1,5 @@
 import React from 'react';
-import { captureMessage } from '@/utils/sentry';
+import { captureMessage } from '../utils/sentry';
 
 /**
  * 关于页面组件

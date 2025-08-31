@@ -4,8 +4,8 @@ import App from './App';
 import './index.css';
 
 // 导入 Sentry 和状态管理
-import { initSentry } from '@/utils/sentry';
-import { initializeAppState, setupStateSubscriptions } from '@/store';
+import { initSentry } from './utils/sentry';
+import { initializeAppState, setupStateSubscriptions } from './store';
 
 /**
  * 初始化应用

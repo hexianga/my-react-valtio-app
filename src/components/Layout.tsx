@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAppState } from '@/hooks';
-import { actions } from '@/store';
+import { useAppState } from '../hooks';
+import { actions } from '../store';
 
 /**
  * 布局组件

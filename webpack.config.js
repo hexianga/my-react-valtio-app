@@ -3,8 +3,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const webpack = require('webpack');
+const dotenv = require('dotenv');
 
 const isProduction = process.env.NODE_ENV === 'production';
+
+// 加载环境变量
+const env = dotenv.config().parsed || {};
 
 module.exports = {
   entry: './src/index.tsx',
@@ -31,7 +36,13 @@ module.exports = {
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
-        use: 'ts-loader',
+        use: {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true,
+            configFile: path.resolve(__dirname, 'tsconfig.json'),
+          },
+        },
       },
       {
         test: /\.css$/,
@@ -56,6 +67,13 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
       filename: 'index.html',
+    }),
+    // 定义环境变量
+    new webpack.DefinePlugin({
+      'process.env': JSON.stringify({
+        ...env,
+        NODE_ENV: process.env.NODE_ENV || 'development',
+      }),
     }),
     ...(isProduction
       ? [
@@ -92,7 +110,7 @@ module.exports = {
       directory: path.join(__dirname, 'public'),
     },
     compress: true,
-    port: 3000,
+    port: 3001,
     hot: true,
     historyApiFallback: true,
     open: true,

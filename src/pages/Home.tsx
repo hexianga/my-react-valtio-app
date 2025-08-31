@@ -1,6 +1,6 @@
 import React from 'react';
-import { useAppState } from '@/hooks';
-import { actions } from '@/store';
+import { useAppState } from '../hooks';
+import { actions } from '../store';
 
 /**
  * 首页组件

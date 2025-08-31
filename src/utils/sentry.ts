@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/react';
-import { BrowserTracing } from '@sentry/tracing';
 
 /**
  * 初始化 Sentry 配置
@@ -11,21 +10,7 @@ export const initSentry = () => {
   
   Sentry.init({
     dsn: SENTRY_DSN,
-    integrations: [
-      new BrowserTracing({
-        // 设置路由变化追踪
-        routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-          (history) => history,
-          [],
-          [],
-          {
-            // 启用路由变化追踪
-            enableLongTask: true,
-            enableInp: true, // 启用 INP 指标
-          }
-        ),
-      }),
-    ],
+    integrations: [Sentry.browserTracingIntegration()],
     
     // 性能监控配置
     tracesSampleRate: 1.0, // 采样率，生产环境建议设置为 0.1
@@ -34,21 +19,6 @@ export const initSentry = () => {
     
     // 环境配置
     environment: process.env.NODE_ENV,
-    
-    // 启用 Web Vitals 监控
-    integrations: [
-      new BrowserTracing({
-        routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-          (history) => history,
-          [],
-          [],
-          {
-            enableLongTask: true,
-            enableInp: true,
-          }
-        ),
-      }),
-    ],
     
     // 错误过滤
     beforeSend(event) {

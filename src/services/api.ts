@@ -1,5 +1,12 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { trackApiPerformance } from '@/utils/sentry';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import { trackApiPerformance } from '../utils/sentry';
+
+// 扩展 Axios 配置类型以支持 metadata
+interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
+  metadata?: {
+    startTime: number;
+  };
+}
 
 /**
  * API 响应接口
@@ -25,7 +32,7 @@ const createApiInstance = (): AxiosInstance => {
 
   // 请求拦截器
   instance.interceptors.request.use(
-    (config) => {
+    (config: ExtendedAxiosRequestConfig) => {
       // 添加认证 token
       const token = localStorage.getItem('auth_token');
       if (token) {
@@ -47,7 +54,7 @@ const createApiInstance = (): AxiosInstance => {
     (response: AxiosResponse) => {
       // 计算请求耗时
       const endTime = Date.now();
-      const startTime = response.config.metadata?.startTime || endTime;
+      const startTime = (response.config as ExtendedAxiosRequestConfig).metadata?.startTime || endTime;
       const duration = endTime - startTime;
       
       // 记录 API 性能
