@@ -17,6 +17,10 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const commonConfig = require('./webpack.common');
 
+// 确保路径正确
+const publicPath = path.resolve(__dirname, 'public');
+const templatePath = path.join(publicPath, 'index.html');
+
 module.exports = merge(commonConfig, {
   mode: 'production',
   output: {
@@ -47,7 +51,7 @@ module.exports = merge(commonConfig, {
     }),
     // 配置HTML输出
     new HtmlWebpackPlugin({
-      template: path.join(path.resolve(__dirname, 'public'), 'index.html'),
+      template: templatePath,
       filename: '../index.html', // 生产环境输出到根目录
     }),
   ],

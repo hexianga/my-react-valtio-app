@@ -11,7 +11,12 @@
 const path = require('path');
 const { merge } = require('webpack-merge');
 const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const commonConfig = require('./webpack.common');
+
+// 确保路径正确
+const publicPath = path.resolve(__dirname, 'public');
+const templatePath = path.join(publicPath, 'index.html');
 
 module.exports = merge(commonConfig, {
   mode: 'development',
@@ -33,6 +38,10 @@ module.exports = merge(commonConfig, {
     ],
   },
   plugins: [
+    // 配置HTML输出
+    new HtmlWebpackPlugin({
+      template: templatePath,
+    }),
     // 定义环境变量
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development'),

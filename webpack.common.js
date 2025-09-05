@@ -18,10 +18,6 @@ const dotenv = require('dotenv');
 // 加载环境变量
 const envVars = dotenv.config().parsed || {};
 
-// 确保路径正确
-const publicPath = path.resolve(__dirname, 'public');
-const templatePath = path.join(publicPath, 'index.html');
-
 module.exports = {
   entry: './src/index.tsx',
   resolve: {
@@ -62,9 +58,6 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      template: templatePath,
-    }),
     // 定义环境变量
     new webpack.DefinePlugin({
       'process.env': JSON.stringify({
