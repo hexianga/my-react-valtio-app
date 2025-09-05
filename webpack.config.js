@@ -6,23 +6,25 @@ const TerserPlugin = require('terser-webpack-plugin');
 const webpack = require('webpack');
 const dotenv = require('dotenv');
 
-const isProduction = process.env.NODE_ENV === 'production';
+module.exports = (env, argv) => {
+  const isProduction = argv.mode === 'production';
+  console.log('isProduction', argv.mode, isProduction);
 
-// 加载环境变量
-const env = dotenv.config().parsed || {};
-console.log(env);
+  // 加载环境变量
+  const envVars = dotenv.config().parsed || {};
+  console.log(envVars);
 
-// 确保路径正确
-const publicPath = path.resolve(__dirname, 'public');
-const templatePath = path.join(publicPath, 'index.html');
+  // 确保路径正确
+  const publicPath = path.resolve(__dirname, 'public');
+  const templatePath = path.join(publicPath, 'index.html');
 
-module.exports = {
-  entry: './src/index.tsx',
-  output: {
-    path: path.resolve(__dirname, 'dist/static'),
-    filename: isProduction ? '[name].[contenthash].js' : '[name].js',
-    publicPath: isProduction ? '/static/' : '/', // 开发环境使用根路径，生产环境使用 /static/
-  },
+  return {
+    entry: './src/index.tsx',
+    output: {
+      path: path.resolve(__dirname, 'dist/static'),
+      filename: isProduction ? '[name].[contenthash].js' : '[name].js',
+      publicPath: isProduction ? '/static/' : '/', // 开发环境使用根路径，生产环境使用 /static/
+    },
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
     alias: {
@@ -76,8 +78,8 @@ module.exports = {
     // 定义环境变量
     new webpack.DefinePlugin({
       'process.env': JSON.stringify({
-        ...env,
-        NODE_ENV: process.env.NODE_ENV || 'development',
+        ...envVars,
+        NODE_ENV: isProduction ? 'production' : 'development',
       }),
     }),
     ...(isProduction
@@ -121,4 +123,5 @@ module.exports = {
     open: true,
   },
   devtool: isProduction ? 'source-map' : 'eval-source-map',
+  };
 };
