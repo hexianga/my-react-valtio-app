@@ -17,14 +17,14 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const commonConfig = require('./webpack.common');
 
-// 确保路径正确
-const publicPath = path.resolve(__dirname, 'public');
+// 确保路径正确 - 调整为从项目根目录引用
+const publicPath = path.resolve(__dirname, '../public');
 const templatePath = path.join(publicPath, 'index.html');
 
 module.exports = merge(commonConfig, {
   mode: 'production',
   output: {
-    path: path.resolve(__dirname, 'dist/static'),
+    path: path.resolve(__dirname, '../dist/static'),
     filename: '[name].[contenthash].js',
     publicPath: '/static', // 生产环境使用根路径
   },

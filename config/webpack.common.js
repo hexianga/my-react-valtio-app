@@ -15,22 +15,22 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const webpack = require('webpack');
 const dotenv = require('dotenv');
 
-// 加载环境变量
-const envVars = dotenv.config().parsed || {};
+// 加载环境变量 - 调整为从项目根目录加载
+const envVars = dotenv.config({ path: path.resolve(__dirname, '../.env') }).parsed || {};
 
 module.exports = {
-  entry: './src/index.tsx',
+  entry: path.resolve(__dirname, '../src/index.tsx'),
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
     alias: {
-      '@': path.resolve(__dirname, 'src'),
-      '@/components': path.resolve(__dirname, 'src/components'),
-      '@/pages': path.resolve(__dirname, 'src/pages'),
-      '@/store': path.resolve(__dirname, 'src/store'),
-      '@/utils': path.resolve(__dirname, 'src/utils'),
-      '@/types': path.resolve(__dirname, 'src/types'),
-      '@/hooks': path.resolve(__dirname, 'src/hooks'),
-      '@/services': path.resolve(__dirname, 'src/services'),
+      '@': path.resolve(__dirname, '../src'),
+      '@/components': path.resolve(__dirname, '../src/components'),
+      '@/pages': path.resolve(__dirname, '../src/pages'),
+      '@/store': path.resolve(__dirname, '../src/store'),
+      '@/utils': path.resolve(__dirname, '../src/utils'),
+      '@/types': path.resolve(__dirname, '../src/types'),
+      '@/hooks': path.resolve(__dirname, '../src/hooks'),
+      '@/services': path.resolve(__dirname, '../src/services'),
     },
   },
   module: {
@@ -42,7 +42,7 @@ module.exports = {
           loader: 'ts-loader',
           options: {
             transpileOnly: true,
-            configFile: path.resolve(__dirname, 'tsconfig.json'),
+            configFile: path.resolve(__dirname, '../tsconfig.json'),
           },
         },
       },

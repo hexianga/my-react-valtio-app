@@ -14,14 +14,14 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const commonConfig = require('./webpack.common');
 
-// 确保路径正确
-const publicPath = path.resolve(__dirname, 'public');
+// 确保路径正确 - 调整为从项目根目录引用
+const publicPath = path.resolve(__dirname, '../public');
 const templatePath = path.join(publicPath, 'index.html');
 
 module.exports = merge(commonConfig, {
   mode: 'development',
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, '../dist'),
     filename: '[name].js',
     publicPath: '/',
   },
@@ -46,16 +46,13 @@ module.exports = merge(commonConfig, {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development'),
     }),
-    // 启用热模块替换
-    new webpack.HotModuleReplacementPlugin(),
   ],
   devServer: {
     static: {
-      directory: path.resolve(__dirname, 'public'),
+      directory: path.resolve(__dirname, '../public'),
     },
     compress: true,
     port: 3001,
-    hot: true,
     historyApiFallback: true,
     open: true,
   },
