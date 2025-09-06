@@ -26,7 +26,7 @@ module.exports = merge(commonConfig, {
   output: {
     path: path.resolve(__dirname, '../dist/static'),
     filename: '[name].[contenthash].js',
-    publicPath: '/static', // 生产环境使用根路径
+    publicPath: process.env.CDN_URL || '/static/', // 🔧 支持 CDN 配置
   },
   module: {
     rules: [
@@ -41,18 +41,31 @@ module.exports = merge(commonConfig, {
     ],
   },
   plugins: [
-    // 定义环境变量
+    // 🔧 生产环境变量定义
+    // NODE_ENV 会被自动设置，其他环境变量从 .env.production 加载
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production'),
     }),
-    // 提取CSS到单独文件
+    // 🎨 提取CSS到单独文件
     new MiniCssExtractPlugin({
       filename: '[name].[contenthash].css',
     }),
-    // 配置HTML输出
+    // 📄 配置HTML输出
     new HtmlWebpackPlugin({
       template: templatePath,
       filename: '../index.html', // 生产环境输出到根目录
+      minify: {
+        removeComments: true,
+        collapseWhitespace: true,
+        removeRedundantAttributes: true,
+        useShortDoctype: true,
+        removeEmptyAttributes: true,
+        removeStyleLinkTypeAttributes: true,
+        keepClosingSlash: true,
+        minifyJS: true,
+        minifyCSS: true,
+        minifyURLs: true,
+      },
     }),
   ],
   optimization: {
@@ -67,6 +80,9 @@ module.exports = merge(commonConfig, {
       }),
     ],
   },
-  // 生产环境使用 source-map 提供错误追踪能力，同时不暴露源码
-  devtool: 'source-map',
+  // 🔍 Source Map 配置 - 生产环境最佳实践
+  // 根据 GENERATE_SOURCEMAP 环境变量决定是否生成 source map
+  // - 生产环境默认禁用以减小文件体积和保护源码
+  // - 可通过设置 GENERATE_SOURCEMAP=true 启用（便于错误监控）
+  devtool: process.env.GENERATE_SOURCEMAP === 'true' ? 'source-map' : false,
 });

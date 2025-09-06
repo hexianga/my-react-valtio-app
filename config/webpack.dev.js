@@ -42,10 +42,13 @@ module.exports = merge(commonConfig, {
     new HtmlWebpackPlugin({
       template: templatePath,
     }),
-    // 定义环境变量
+    // 🔧 开发环境变量定义
+    // NODE_ENV 会被自动设置，其他环境变量从 .env.development 加载
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development'),
     }),
+    // 🔥 启用热模块替换
+    new webpack.HotModuleReplacementPlugin(),
   ],
   devServer: {
     static: {
@@ -53,8 +56,23 @@ module.exports = merge(commonConfig, {
     },
     compress: true,
     port: 3001,
+    hot: true,           // 🔥 启用热更新
     historyApiFallback: true,
     open: true,
+    client: {
+      overlay: {
+        errors: true,      // 显示错误覆盖层
+        warnings: false,   // 隐藏警告避免干扰
+      },
+    },
+    // 🔧 API 代理配置（可选）
+    proxy: {
+      '/api': {
+        target: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   // 开发环境使用 eval-source-map 提供更好的调试体验
   devtool: 'eval-source-map',

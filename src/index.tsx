@@ -6,12 +6,21 @@ import './index.css';
 // 导入 Sentry 和状态管理
 import { initSentry } from './utils/sentry';
 import { initializeAppState, setupStateSubscriptions } from './store';
+import { validateEnvConfig, logEnvConfig } from './utils/envConfig';
 
 /**
  * 初始化应用
  * 设置 Sentry、状态管理等
  */
 const initializeApp = () => {
+  // 🔧 验证环境配置
+  if (!validateEnvConfig()) {
+    throw new Error('环境配置验证失败，请检查环境变量设置');
+  }
+  
+  // 📋 打印环境配置（仅开发环境）
+  logEnvConfig();
+  
   // 初始化 Sentry
   initSentry();
   

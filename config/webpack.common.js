@@ -15,8 +15,37 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const webpack = require('webpack');
 const dotenv = require('dotenv');
 
-// 加载环境变量 - 调整为从项目根目录加载
-const envVars = dotenv.config({ path: path.resolve(__dirname, '../.env') }).parsed || {};
+// 🔧 环境变量加载策略 - 支持多环境配置
+// 根据 NODE_ENV 自动加载对应的环境配置文件
+// 加载顺序：.env.[environment] -> .env.local -> .env
+const loadEnvironmentVariables = () => {
+  const environment = process.env.NODE_ENV || 'development';
+  const envFiles = [
+    path.resolve(__dirname, `../.env.${environment}`),  // 环境特定配置
+    path.resolve(__dirname, '../.env.local'),            // 本地配置（不提交到版本控制）
+    path.resolve(__dirname, '../.env'),                  // 默认配置
+  ];
+  
+  let envVars = {};
+  
+  // 按优先级加载环境变量（后加载的会覆盖先加载的）
+  envFiles.forEach(envFile => {
+    try {
+      const result = dotenv.config({ path: envFile });
+      if (result.parsed) {
+        envVars = { ...envVars, ...result.parsed };
+        console.log(`✅ 加载环境配置: ${envFile}`);
+      }
+    } catch (error) {
+      // 文件不存在时静默跳过
+      console.log(`⚠️  环境配置文件不存在: ${envFile}`);
+    }
+  });
+  
+  return envVars;
+};
+
+const envVars = loadEnvironmentVariables();
 
 module.exports = {
   entry: path.resolve(__dirname, '../src/index.tsx'),
