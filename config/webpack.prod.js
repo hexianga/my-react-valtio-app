@@ -1,6 +1,6 @@
 /**
  * webpack 配置最佳实践 - 生产环境配置文件
- * 
+ *
  * 生产环境特点：
  * 1. 代码优化：压缩、混淆代码，减小体积
  * 2. 性能优化：分离CSS，优化缓存策略
@@ -38,6 +38,7 @@ module.exports = merge(commonConfig, {
           'postcss-loader',
         ],
       },
+      // 注意：移除了 LESS 配置，因为 Ant Design 5.x 使用 CSS-in-JS
     ],
   },
   plugins: [

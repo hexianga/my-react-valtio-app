@@ -15,6 +15,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const menuItems = [
     { path: '/', label: '首页', icon: '🏠' },
     { path: '/about', label: '关于', icon: 'ℹ️' },
+    { path: '/form', label: '表单示例', icon: '📝' },
   ];
 
   return (
@@ -35,7 +36,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
             {/* 导航菜单 */}
             <div className="hidden md:flex items-center space-x-8">
-              {menuItems.map((item) => (
+              {menuItems.map(item => (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -100,16 +101,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </nav>
 
       {/* 主要内容区域 */}
-      <main className="flex-1">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
 
       {/* 页脚 */}
       <footer className="bg-white border-t border-gray-200 mt-16">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center text-gray-600">
             <p className="mb-2">
-              © 2024 React Valtio App. Built with ❤️ using modern web technologies.
+              © 2024 React Valtio App. Built with ❤️ using modern web
+              technologies.
             </p>
             <p className="text-sm">
               React 18 • TypeScript • Valtio • TailwindCSS • Sentry

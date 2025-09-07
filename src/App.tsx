@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/react';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import About from './pages/About';
+import FormPage from './pages/FormPage';
 
 /**
  * 错误边界组件
@@ -72,6 +73,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
+            <Route path="/form" element={<FormPage />} />
             {/* 404 页面 */}
             <Route
               path="*"

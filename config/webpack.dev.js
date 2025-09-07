@@ -1,6 +1,6 @@
 /**
  * webpack 配置最佳实践 - 开发环境配置文件
- * 
+ *
  * 开发环境特点：
  * 1. 快速构建：优化开发体验，减少构建时间
  * 2. 便于调试：提供源码映射，方便定位问题
@@ -35,6 +35,7 @@ module.exports = merge(commonConfig, {
           'postcss-loader',
         ],
       },
+      // 注意：移除了 LESS 配置，因为 Ant Design 5.x 使用 CSS-in-JS
     ],
   },
   plugins: [
@@ -47,22 +48,20 @@ module.exports = merge(commonConfig, {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development'),
     }),
-    // 🔥 启用热模块替换
-    new webpack.HotModuleReplacementPlugin(),
   ],
   devServer: {
     static: {
       directory: path.resolve(__dirname, '../public'),
     },
     compress: true,
-    port: 3001,
-    hot: true,           // 🔥 启用热更新
+    port: 3004,
+    hot: true, // 🔥 启用热更新
     historyApiFallback: true,
     open: true,
     client: {
       overlay: {
-        errors: true,      // 显示错误覆盖层
-        warnings: false,   // 隐藏警告避免干扰
+        errors: true, // 显示错误覆盖层
+        warnings: false, // 隐藏警告避免干扰
       },
     },
     // 🔧 API 代理配置（可选）

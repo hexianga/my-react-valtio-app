@@ -1,6 +1,29 @@
 import type { ComponentType, ReactNode } from 'react';
 
 /**
+ * 表单数据接口
+ */
+export interface FormData {
+  name: string;
+  email: string;
+  age: number;
+  phone: string;
+  address: string;
+  gender: 'male' | 'female';
+  interests: string[];
+  description?: string;
+}
+
+/**
+ * 表单提交响应接口
+ */
+export interface FormSubmitResponse {
+  success: boolean;
+  message: string;
+  data?: FormData;
+}
+
+/**
  * 通用响应接口
  */
 export interface BaseResponse<T = any> {
@@ -120,7 +143,17 @@ export interface TableColumn<T = any> {
 export interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'password' | 'email' | 'number' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'date' | 'file';
+  type:
+    | 'text'
+    | 'password'
+    | 'email'
+    | 'number'
+    | 'textarea'
+    | 'select'
+    | 'checkbox'
+    | 'radio'
+    | 'date'
+    | 'file';
   required?: boolean;
   placeholder?: string;
   options?: Array<{ label: string; value: string | number }>;
