@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack serve --config config/webpack.dev.js",
-    "build": "cross-env NODE_ENV=production webpack --config config/webpack.prod.js",
+    "build": "npm run build:prod",
     "build:dev": "cross-env NODE_ENV=development webpack --config config/webpack.dev.js",
     "build:test": "cross-env NODE_ENV=test webpack --config config/webpack.prod.js",
     "build:prod": "cross-env NODE_ENV=production webpack --config config/webpack.prod.js",

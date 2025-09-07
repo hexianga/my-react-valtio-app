@@ -39,7 +39,7 @@ export const initSentry = () => {
       },
       
       // 启用调试模式（开发环境）
-      debug: process.env.NODE_ENV === 'development',
+      // debug: process.env.NODE_ENV === 'development',
     });
     
     console.log('✅ Sentry 初始化成功');
