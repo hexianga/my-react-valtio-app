@@ -1,4 +1,4 @@
-import { proxy, subscribe } from 'valtio';
+import { proxy } from 'valtio';
 import { subscribeKey } from 'valtio/utils';
 
 /**

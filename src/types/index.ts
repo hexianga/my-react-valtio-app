@@ -1,3 +1,5 @@
+import type { ComponentType, ReactNode } from 'react';
+
 /**
  * 通用响应接口
  */
@@ -75,7 +77,7 @@ export type Language = 'zh-CN' | 'en-US';
  */
 export interface RouteConfig {
   path: string;
-  component: React.ComponentType<any>;
+  component: ComponentType<any>;
   exact?: boolean;
   children?: RouteConfig[];
   meta?: {
@@ -91,7 +93,7 @@ export interface RouteConfig {
 export interface MenuItem {
   key: string;
   label: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   path?: string;
   children?: MenuItem[];
   disabled?: boolean;
@@ -106,7 +108,7 @@ export interface TableColumn<T = any> {
   dataIndex: keyof T;
   width?: number | string;
   fixed?: 'left' | 'right';
-  render?: (value: any, record: T, index: number) => React.ReactNode;
+  render?: (value: any, record: T, index: number) => ReactNode;
   sorter?: boolean | ((a: T, b: T) => number);
   filters?: Array<{ text: string; value: string | number }>;
   onFilter?: (value: string | number, record: T) => boolean;

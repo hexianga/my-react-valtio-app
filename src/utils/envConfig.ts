@@ -83,7 +83,7 @@ export function logEnvConfig(): void {
     console.log('版本:', config.version);
     console.log('调试模式:', config.debug);
     console.log('API 地址:', config.apiBaseUrl);
-    console.log('API 超时:', config.apiTimeout + 'ms');
+    console.log('API 超时:', `${config.apiTimeout  }ms`);
     console.log('使用 Mock:', config.useMock);
     console.log('开发工具:', config.enableDevtools);
     console.log('日志级别:', config.logLevel);

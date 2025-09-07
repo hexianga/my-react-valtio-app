@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { useSnapshot } from 'valtio';
 import { useRequest } from 'ahooks';
 import { appState, actions } from '../store';
@@ -112,7 +112,7 @@ export const useThrottle = (callback: Function, delay: number) => {
  * @param ref 要监听的元素引用
  * @param handler 点击外部时的处理函数
  */
-export const useClickOutside = (ref: React.RefObject<HTMLElement>, handler: () => void) => {
+export const useClickOutside = (ref: RefObject<HTMLElement>, handler: () => void) => {
   useEffect(() => {
     const listener = (event: MouseEvent | TouchEvent) => {
       if (!ref.current || ref.current.contains(event.target as Node)) {
