@@ -18,20 +18,17 @@ const ErrorBoundary = Sentry.withErrorBoundary(
           <div className="text-center">
             <div className="text-6xl mb-4">😵</div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              页面出错了
+              页面出错了!
             </h2>
             <p className="text-gray-600 mb-6">
               抱歉，页面遇到了一个错误。我们已经记录了这个错误，并将尽快修复。
             </p>
             <div className="space-y-4">
-              <button
-                onClick={resetError}
-                className="btn btn-primary w-full"
-              >
+              <button onClick={resetError} className="btn btn-primary w-full">
                 重试
               </button>
               <button
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = '/')}
                 className="btn btn-secondary w-full"
               >
                 返回首页
@@ -49,7 +46,9 @@ const ErrorBoundary = Sentry.withErrorBoundary(
                   </div>
                   <div>
                     <strong>组件栈:</strong>
-                    <div className="mt-1 whitespace-pre-wrap">{componentStack}</div>
+                    <div className="mt-1 whitespace-pre-wrap">
+                      {componentStack}
+                    </div>
                   </div>
                 </div>
               </details>
@@ -86,10 +85,7 @@ const App: React.FC = () => {
                     <p className="text-gray-600 mb-6">
                       抱歉，您访问的页面不存在。
                     </p>
-                    <a
-                      href="/"
-                      className="btn btn-primary"
-                    >
+                    <a href="/" className="btn btn-primary">
                       返回首页
                     </a>
                   </div>
