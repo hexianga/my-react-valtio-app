@@ -1,11 +1,16 @@
 import React from 'react';
+import React from 'react';
 import { captureMessage, captureError } from '../utils/sentry';
+import { useWebVitals, usePerformanceScore } from '../hooks';
 
 /**
  * 关于页面组件
  * 展示项目信息和 Sentry 测试功能
  */
 const About: React.FC = () => {
+  // Web Vitals 性能监控
+  const { metrics, loading: vitalsLoading, getPerformanceSummary, formatMetricValue } = useWebVitals();
+  const { score: performanceScore, loading: scoreLoading } = usePerformanceScore();
   const handleTestError = () => {
     try {
       // 测试 Sentry 错误捕获
@@ -129,6 +134,108 @@ const About: React.FC = () => {
                 <span className="font-medium">错误监控:</span>
                 <span>Sentry 7.80.1</span>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Web Vitals 性能指标 */}
+        <div className="card mb-8">
+          <h3 className="text-xl font-semibold mb-4">📊 Web Vitals 性能指标</h3>
+          <p className="text-gray-600 mb-6">
+            实时监控页面的核心性能指标，帮助优化用户体验。
+          </p>
+          
+          {/* 性能评分 */}
+          <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900">性能评分</h4>
+                <p className="text-sm text-gray-600">基于 Web Vitals 指标计算</p>
+              </div>
+              <div className="text-right">
+                {scoreLoading ? (
+                  <div className="text-2xl font-bold text-gray-400">加载中...</div>
+                ) : (
+                  <div className={`text-3xl font-bold ${
+                    performanceScore >= 80 ? 'text-green-600' :
+                    performanceScore >= 50 ? 'text-yellow-600' : 'text-red-600'
+                  }`}>
+                    {performanceScore}/100
+                  </div>
+                )}
+                <div className="text-xs text-gray-500">
+                  {performanceScore >= 80 ? '优秀' : performanceScore >= 50 ? '良好' : '需要改进'}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* 指标列表 */}
+          {vitalsLoading ? (
+            <div className="text-center py-8 text-gray-500">
+              📈 正在收集性能数据...
+            </div>
+          ) : metrics.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {metrics.map((metric) => {
+                const getRatingColor = (rating: string) => {
+                  switch (rating) {
+                    case 'good': return 'border-green-200 bg-green-50 text-green-700';
+                    case 'needs-improvement': return 'border-yellow-200 bg-yellow-50 text-yellow-700';
+                    case 'poor': return 'border-red-200 bg-red-50 text-red-700';
+                    default: return 'border-gray-200 bg-gray-50 text-gray-700';
+                  }
+                };
+                
+                const getMetricName = (name: string) => {
+                  switch (name) {
+                    case 'CLS': return '累积布局偏移';
+                    case 'INP': return '交互到下次绘制';
+                    case 'FCP': return '首次内容绘制';
+                    case 'LCP': return '最大内容绘制';
+                    case 'TTFB': return '首字节时间';
+                    default: return name;
+                  }
+                };
+                
+                return (
+                  <div
+                    key={metric.name}
+                    className={`p-4 border-2 rounded-lg ${getRatingColor(metric.rating)}`}
+                  >
+                    <div className="text-center">
+                      <div className="text-xs font-medium opacity-75 mb-1">
+                        {metric.name}
+                      </div>
+                      <div className="text-sm font-medium mb-1">
+                        {getMetricName(metric.name)}
+                      </div>
+                      <div className="text-lg font-bold">
+                        {formatMetricValue(metric.name, metric.value)}
+                      </div>
+                      <div className="text-xs capitalize mt-1">
+                        {metric.rating === 'good' ? '优秀' : 
+                         metric.rating === 'needs-improvement' ? '需改进' : '较差'}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              🕰️ 等待数据加载...
+            </div>
+          )}
+          
+          {/* 性能优化建议 */}
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h4 className="text-sm font-semibold text-blue-900 mb-2">💡 性能优化建议</h4>
+            <div className="text-xs text-blue-700 space-y-1">
+              <div>• 优化图片: 使用 WebP 格式，添加 loading="lazy"</div>
+              <div>• 代码分割: 使用动态 import() 和 React.lazy()</div>
+              <div>• 资源压缩: 启用 Gzip/Brotli 压缩</div>
+              <div>• CDN加速: 使用 CDN 分发静态资源</div>
             </div>
           </div>
         </div>

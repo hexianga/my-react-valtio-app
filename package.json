@@ -40,7 +40,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.1",
-    "valtio": "^1.12.1"
+    "valtio": "^1.12.1",
+    "web-vitals": "^5.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.23.6",

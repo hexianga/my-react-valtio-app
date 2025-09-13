@@ -262,3 +262,6 @@ export const useAsyncRequest = <TData, TParams extends any[]>(
     },
   });
 };
+
+// Web Vitals Hook
+export { useWebVitals, usePerformanceScore, type WebVitalsMetric, type UseWebVitalsOptions } from './useWebVitals';

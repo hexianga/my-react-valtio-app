@@ -3,10 +3,11 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
 
-// 导入 Sentry 和状态管理
+// 导入 Sentry、状态管理和性能监控
 import { initSentry } from './utils/sentry';
 import { initializeAppState, setupStateSubscriptions } from './store';
 import { validateEnvConfig, logEnvConfig } from './utils/envConfig';
+import { initWebVitals, getPerformanceSummary, getPerformanceAdvice } from './utils/webVitals';
 
 /**
  * 初始化应用
@@ -30,10 +31,18 @@ const initializeApp = () => {
   // 设置状态订阅
   setupStateSubscriptions();
   
+  // 🎯 初始化 Web Vitals 性能监控
+  initWebVitals({
+    enableConsoleLog: process.env.NODE_ENV === 'development',
+    enableSentryReport: true,
+    enableAnalytics: process.env.NODE_ENV === 'production',
+  });
+  
   console.log('🚀 React Valtio App 初始化完成');
   console.log('📊 Sentry 监控已启用');
   console.log('🎨 TailwindCSS 样式已加载');
   console.log('⚡ Valtio 状态管理已配置');
+  console.log('📊 Web Vitals 性能监控已启用');
 };
 
 // 初始化应用
@@ -55,3 +64,16 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+// 📊 页面加载完成后显示性能摘要
+window.addEventListener('load', () => {
+  // 延迟执行，确保所有指标都已采集
+  setTimeout(() => {
+    getPerformanceSummary();
+    
+    // 开发环境显示优化建议
+    if (process.env.NODE_ENV === 'development') {
+      getPerformanceAdvice();
+    }
+  }, 1000);
+});

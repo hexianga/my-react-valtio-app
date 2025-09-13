@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import About from './pages/About';
 import FormPage from './pages/FormPage';
+import WebVitalsDisplay from './components/WebVitalsDisplay';
 
 /**
  * 错误边界组件
@@ -97,6 +98,9 @@ const App: React.FC = () => {
           </Routes>
         </Layout>
       </Router>
+      
+      {/* Web Vitals 性能监控显示组件 (仅开发环境) */}
+      <WebVitalsDisplay position="bottom-right" />
     </ErrorBoundary>
   );
 };
