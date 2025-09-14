@@ -14,6 +14,16 @@ import PatchModal from './components/PatchModal';
 import DiffStats from './components/DiffStats';
 import DiffSettings from './components/DiffSettings';
 
+// 定义标记类型
+type MarkerType = 'unchanged' | 'added' | 'removed' | 'both';
+
+// 定义滚动条标记接口
+interface ScrollbarMarker {
+  index: number;
+  hasChange: boolean;
+  type: MarkerType;
+}
+
 interface JSDiffViewerProps {
   className?: string;
 }
@@ -52,286 +62,238 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
   useKeyboardShortcuts(handleCompare, generatePatch, clearData);
 
   // 双栏视图渲染
-  const renderSplitDiffView = useCallback(
-    (result: NonNullable<typeof snap.currentResult>) => {
-      if (!result.splitView) {
-        return (
-          <div className="text-center py-8 text-gray-500">
-            双栏视图数据不可用
-          </div>
-        );
+  const renderSplitDiffView = useCallback((result: any) => {
+    if (!result.splitView) {
+      return (
+        <div className="text-center py-8 text-gray-500">
+          双栏视图数据不可用
+        </div>
+      );
+    }
+
+    const { leftLines, rightLines } = result.splitView;
+
+    // 生成滚动条高亮标记数据
+    const scrollbarMarkers: ScrollbarMarker[] = [];
+    const removedRanges: number[] = [];
+    const addedRanges: number[] = [];
+
+    // 首先收集所有的删除和新增区间
+    for (let i = 0; i < leftLines.length; i++) {
+      if (leftLines[i].type === 'removed') {
+        removedRanges.push(i);
       }
-
-      const { leftLines, rightLines } = result.splitView;
-
-      // 生成滚动条高亮标记数据
-      const scrollbarMarkers = [];
-      const removedRanges = [];
-      const addedRanges = [];
-
-      // 首先收集所有的删除和新增区间
-      for (let i = 0; i < leftLines.length; i++) {
-        if (leftLines[i].type === 'removed') {
-          removedRanges.push(i);
-        }
-        if (rightLines[i].type === 'added') {
-          addedRanges.push(i);
-        }
+      if (rightLines[i].type === 'added') {
+        addedRanges.push(i);
       }
+    }
 
-      // 然后为每一行决定其标记类型
-      for (let i = 0; i < leftLines.length; i++) {
-        const leftLine = leftLines[i];
-        const rightLine = rightLines[i];
+    // 然后为每一行决定其标记类型
+    for (let i = 0; i < leftLines.length; i++) {
+      const leftLine = leftLines[i];
+      const rightLine = rightLines[i];
 
-        const hasLeftRemoval = leftLine.type === 'removed';
-        const hasRightAddition = rightLine.type === 'added';
+      const hasLeftRemoval = leftLine.type === 'removed';
+      const hasRightAddition = rightLine.type === 'added';
 
-        let markerType = 'unchanged';
+      let markerType: MarkerType = 'unchanged';
 
-        if (hasLeftRemoval || hasRightAddition) {
-          // 有变化的行，判断是否为替换操作
-          if (hasLeftRemoval && hasRightAddition) {
-            // 同一行既有删除又有新增，明确是替换
-            markerType = 'both';
-          } else {
-            // 单一操作，但检查是否与相邻操作构成替换
-            if (hasLeftRemoval) {
-              // 这是一个删除行，查看附近是否有新增行
-              const nearbyAddition = addedRanges.some(
-                addedIndex => Math.abs(addedIndex - i) <= 2 // 在2行范围内
-              );
-              markerType = nearbyAddition ? 'both' : 'removed';
-            } else if (hasRightAddition) {
-              // 这是一个新增行，查看附近是否有删除行
-              const nearbyRemoval = removedRanges.some(
-                removedIndex => Math.abs(removedIndex - i) <= 2 // 在2行范围内
-              );
-              markerType = nearbyRemoval ? 'both' : 'added';
-            }
+      if (hasLeftRemoval || hasRightAddition) {
+        // 有变化的行，判断是否为替换操作
+        if (hasLeftRemoval && hasRightAddition) {
+          // 同一行既有删除又有新增，明确是替换
+          markerType = 'both';
+        } else {
+          // 单一操作，但检查是否与相邻操作构成替换
+          if (hasLeftRemoval) {
+            // 这是一个删除行，查看附近是否有新增行
+            const nearbyAddition = addedRanges.some(addedIndex =>
+              Math.abs(addedIndex - i) <= 2 // 在2行范围内
+            );
+            markerType = nearbyAddition ? 'both' : 'removed';
+          } else if (hasRightAddition) {
+            // 这是一个新增行，查看附近是否有删除行
+            const nearbyRemoval = removedRanges.some(removedIndex =>
+              Math.abs(removedIndex - i) <= 2 // 在2行范围内
+            );
+            markerType = nearbyRemoval ? 'both' : 'added';
           }
         }
-
-        scrollbarMarkers.push({
-          index: i,
-          hasChange: hasLeftRemoval || hasRightAddition,
-          type: markerType,
-        });
       }
 
-      const handleScrollToLine = (index: number) => {
-        const contentEl = document.getElementById('diff-content');
-        const lineHeight = 20;
-        if (contentEl) {
-          contentEl.scrollTop = index * lineHeight;
-        }
-      };
+      scrollbarMarkers.push({
+        index: i,
+        hasChange: hasLeftRemoval || hasRightAddition,
+        type: markerType
+      });
+    }
 
-      return (
-        <div className="flex border border-gray-200 rounded-lg overflow-hidden relative">
-          {/* 双栏内容区域 */}
-          <div className="flex-1">
-            {/* 表头 */}
-            <div className="bg-gray-100 border-b border-gray-200">
-              <div className="flex">
-                <div className="flex-1 px-4 py-2 border-r border-gray-300">
-                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                    <span className="text-red-600">➖</span>
-                    <span>原始内容</span>
-                  </div>
+    const handleScrollToLine = (index: number) => {
+      const contentEl = document.getElementById('diff-content');
+      const lineHeight = 20;
+      if (contentEl) {
+        contentEl.scrollTop = index * lineHeight;
+      }
+    };
+
+    return (
+      <div className="flex border border-gray-200 rounded-lg overflow-hidden relative">
+        {/* 双栏内容区域 */}
+        <div className="flex-1">
+          {/* 表头 */}
+          <div className="bg-gray-100 border-b border-gray-200">
+            <div className="flex">
+              <div className="flex-1 px-4 py-2 border-r border-gray-300">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <span className="text-red-600">➖</span>
+                  <span>原始内容</span>
                 </div>
-                <div className="flex-1 px-4 py-2">
-                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                    <span className="text-green-600">➕</span>
-                    <span>新内容</span>
-                  </div>
+              </div>
+              <div className="flex-1 px-4 py-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <span className="text-green-600">➕</span>
+                  <span>新内容</span>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* 内容区域 - 使用优化的 SplitLine 组件 */}
-            <div className="max-h-[800px] overflow-y-auto" id="diff-content">
-              {leftLines.map((leftLine, index) => (
-                <SplitLine
-                  key={index}
-                  leftLine={leftLine}
-                  rightLine={rightLines[index]}
-                  index={index}
-                />
-              ))}
+          {/* 内容区域 - 使用优化的 SplitLine 组件 */}
+          <div className="max-h-[800px] overflow-y-auto" id="diff-content">
+            {leftLines.map((leftLine: any, index: number) => (
+              <SplitLine
+                key={index}
+                leftLine={leftLine}
+                rightLine={rightLines[index]}
+                index={index}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* 右侧滚动条高亮标记 */}
+        <div className="w-4 bg-gray-100 border-l border-gray-200 flex flex-col">
+          <div className="h-12 bg-gray-100 border-b border-gray-200"></div>
+          <div className="flex-1 relative">
+            {scrollbarMarkers.map((marker) => {
+              if (!marker.hasChange) return null;
+
+              const percentage = (marker.index / leftLines.length) * 100;
+
+              // 根据变化类型渲染不同的标记样式
+              if (marker.type === 'both') {
+                // 同时有删除和新增，渲染一半红色一半绿色
+                return (
+                  <div
+                    key={marker.index}
+                    className="absolute w-3 h-1 rounded-sm mx-0.5 cursor-pointer hover:w-4 transition-all overflow-hidden"
+                    style={{ top: `${percentage}%` }}
+                    title={`第${marker.index + 1}行: 删除和新增`}
+                    onClick={() => handleScrollToLine(marker.index)}
+                  >
+                    {/* 左半部分（红色） */}
+                    <div className="absolute left-0 top-0 w-1.5 h-full bg-red-400"></div>
+                    {/* 右半部分（绿色） */}
+                    <div className="absolute right-0 top-0 w-1.5 h-full bg-green-400"></div>
+                  </div>
+                );
+              } else {
+                // 单一类型的变化
+                const markerColor = marker.type === 'removed'
+                  ? 'bg-red-400'
+                  : 'bg-green-400';
+
+                return (
+                  <div
+                    key={marker.index}
+                    className={`absolute w-3 h-1 ${markerColor} rounded-sm mx-0.5 cursor-pointer hover:w-4 transition-all`}
+                    style={{ top: `${percentage}%` }}
+                    title={`第${marker.index + 1}行: ${marker.type === 'removed' ? '删除' : '新增'}`}
+                    onClick={() => handleScrollToLine(marker.index)}
+                  />
+                );
+              }
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }, []);
+
+  // 统一视图渲染
+  const renderUnifiedView = useCallback((result: any) => {
+    return (
+      <div className="flex border border-gray-200 rounded-lg overflow-hidden relative">
+        {/* 统一视图内容区域 */}
+        <div className="flex-1">
+          {/* 统一视图表头 */}
+          <div className="bg-gray-100 px-3 py-2 border-b border-gray-200">
+            <div className="flex items-center gap-3 text-xs text-gray-600 font-mono">
+              <span className="w-4"></span>
+              <div className="flex gap-2 w-20">
+                <span className="w-8 text-center">原始</span>
+                <span className="w-8 text-center">新版</span>
+              </div>
+              <span className="flex-1">内容</span>
             </div>
           </div>
 
-          {/* 右侧滚动条高亮标记 */}
-          <div className="w-4 bg-gray-100 border-l border-gray-200 flex flex-col">
-            <div className="h-12 bg-gray-100 border-b border-gray-200"></div>
-            <div className="flex-1 relative">
-              {scrollbarMarkers.map(marker => {
-                if (!marker.hasChange) return null;
+          {/* 统一视图内容 - 使用优化的 UnifiedDiffLine 组件 */}
+          <div className="max-h-[800px] overflow-y-auto" id="unified-diff-content">
+            {result.unifiedView.map((line: any, index: number) => (
+              <UnifiedDiffLine key={index} line={line} index={index} />
+            ))}
+          </div>
+        </div>
 
-                const percentage = (marker.index / leftLines.length) * 100;
+        {/* 右侧滚动条高亮标记 */}
+        <div className="w-4 bg-gray-100 border-l border-gray-200 flex flex-col">
+          <div className="h-10 bg-gray-100 border-b border-gray-200"></div>
+          <div className="flex-1 relative">
+            {/* 统一视图滚动条高亮标记 */}
+            {result.unifiedView.map((line: any, index: number) => {
+              if (line.type === 'unchanged') return null;
 
-                // 根据变化类型渲染不同的标记样式
-                if (marker.type === 'both') {
-                  // 同时有删除和新增，渲染一半红色一半绿色
-                  return (
+              const percentage = (index / (result.unifiedView.length || 1)) * 100;
+
+              // 统一视图中的变化一般是单一类型，但可能存在复合情况
+              let markerElement;
+
+              if (line.type === 'context' && line.innerChanges && line.innerChanges.length > 0) {
+                // 对于包含内部变化的上下文行，检查是否同时包含删除和新增
+                const hasAdded = line.innerChanges.some((change: any) => change.type === 'added');
+                const hasRemoved = line.innerChanges.some((change: any) => change.type === 'removed');
+
+                if (hasAdded && hasRemoved) {
+                  // 同时有删除和新增
+                  markerElement = (
                     <div
-                      key={marker.index}
+                      key={index}
                       className="absolute w-3 h-1 rounded-sm mx-0.5 cursor-pointer hover:w-4 transition-all overflow-hidden"
                       style={{ top: `${percentage}%` }}
-                      title={`第${marker.index + 1}行: 删除和新增`}
-                      onClick={() => handleScrollToLine(marker.index)}
+                      title={`第${index + 1}行: 删除和新增`}
+                      onClick={() => {
+                        const contentEl = document.getElementById('unified-diff-content');
+                        const lineHeight = 18;
+                        if (contentEl) {
+                          contentEl.scrollTop = index * lineHeight;
+                        }
+                      }}
                     >
-                      {/* 左半部分（红色） */}
                       <div className="absolute left-0 top-0 w-1.5 h-full bg-red-400"></div>
-                      {/* 右半部分（绿色） */}
                       <div className="absolute right-0 top-0 w-1.5 h-full bg-green-400"></div>
                     </div>
                   );
                 } else {
-                  // 单一类型的变化
-                  const markerColor =
-                    marker.type === 'removed' ? 'bg-red-400' : 'bg-green-400';
-
-                  return (
-                    <div
-                      key={marker.index}
-                      className={`absolute w-3 h-1 ${markerColor} rounded-sm mx-0.5 cursor-pointer hover:w-4 transition-all`}
-                      style={{ top: `${percentage}%` }}
-                      title={`第${marker.index + 1}行: ${marker.type === 'removed' ? '删除' : '新增'}`}
-                      onClick={() => handleScrollToLine(marker.index)}
-                    />
-                  );
-                }
-              })}
-            </div>
-          </div>
-        </div>
-      );
-    },
-    []
-  );
-
-  // 统一视图渲染
-  const renderUnifiedView = useCallback(
-    (result: NonNullable<typeof snap.currentResult>) => {
-      return (
-        <div className="flex border border-gray-200 rounded-lg overflow-hidden relative">
-          {/* 统一视图内容区域 */}
-          <div className="flex-1">
-            {/* 统一视图表头 */}
-            <div className="bg-gray-100 px-3 py-2 border-b border-gray-200">
-              <div className="flex items-center gap-3 text-xs text-gray-600 font-mono">
-                <span className="w-4"></span>
-                <div className="flex gap-2 w-20">
-                  <span className="w-8 text-center">原始</span>
-                  <span className="w-8 text-center">新版</span>
-                </div>
-                <span className="flex-1">内容</span>
-              </div>
-            </div>
-
-            {/* 统一视图内容 - 使用优化的 UnifiedDiffLine 组件 */}
-            <div
-              className="max-h-[800px] overflow-y-auto"
-              id="unified-diff-content"
-            >
-              {result.unifiedView.map((line, index) => (
-                <UnifiedDiffLine key={index} line={line} index={index} />
-              ))}
-            </div>
-          </div>
-
-          {/* 右侧滚动条高亮标记 */}
-          <div className="w-4 bg-gray-100 border-l border-gray-200 flex flex-col">
-            <div className="h-10 bg-gray-100 border-b border-gray-200"></div>
-            <div className="flex-1 relative">
-              {/* 统一视图滚动条高亮标记 */}
-              {result.unifiedView.map((line, index) => {
-                if (line.type === 'unchanged') return null;
-
-                const percentage =
-                  (index / (result.unifiedView.length || 1)) * 100;
-
-                // 统一视图中的变化一般是单一类型，但可能存在复合情况
-                let markerElement;
-
-                if (
-                  line.type === 'context' &&
-                  line.innerChanges &&
-                  line.innerChanges.length > 0
-                ) {
-                  // 对于包含内部变化的上下文行，检查是否同时包含删除和新增
-                  const hasAdded = line.innerChanges.some(
-                    (change: any) => change.type === 'added'
-                  );
-                  const hasRemoved = line.innerChanges.some(
-                    (change: any) => change.type === 'removed'
-                  );
-
-                  if (hasAdded && hasRemoved) {
-                    // 同时有删除和新增
-                    markerElement = (
-                      <div
-                        key={index}
-                        className="absolute w-3 h-1 rounded-sm mx-0.5 cursor-pointer hover:w-4 transition-all overflow-hidden"
-                        style={{ top: `${percentage}%` }}
-                        title={`第${index + 1}行: 删除和新增`}
-                        onClick={() => {
-                          const contentEl = document.getElementById(
-                            'unified-diff-content'
-                          );
-                          const lineHeight = 18;
-                          if (contentEl) {
-                            contentEl.scrollTop = index * lineHeight;
-                          }
-                        }}
-                      >
-                        <div className="absolute left-0 top-0 w-1.5 h-full bg-red-400"></div>
-                        <div className="absolute right-0 top-0 w-1.5 h-full bg-green-400"></div>
-                      </div>
-                    );
-                  } else {
-                    const markerColor = hasRemoved
-                      ? 'bg-red-400'
-                      : 'bg-green-400';
-                    markerElement = (
-                      <div
-                        key={index}
-                        className={`absolute w-3 h-1 ${markerColor} rounded-sm mx-0.5 cursor-pointer hover:w-4 transition-all`}
-                        style={{ top: `${percentage}%` }}
-                        title={`第${index + 1}行: ${hasRemoved ? '删除' : '新增'}`}
-                        onClick={() => {
-                          const contentEl = document.getElementById(
-                            'unified-diff-content'
-                          );
-                          const lineHeight = 18;
-                          if (contentEl) {
-                            contentEl.scrollTop = index * lineHeight;
-                          }
-                        }}
-                      />
-                    );
-                  }
-                } else {
-                  // 单一类型的变化
-                  const markerColor =
-                    line.type === 'removed'
-                      ? 'bg-red-400'
-                      : line.type === 'added'
-                        ? 'bg-green-400'
-                        : 'bg-blue-400';
-
+                  const markerColor = hasRemoved ? 'bg-red-400' : 'bg-green-400';
                   markerElement = (
                     <div
                       key={index}
                       className={`absolute w-3 h-1 ${markerColor} rounded-sm mx-0.5 cursor-pointer hover:w-4 transition-all`}
                       style={{ top: `${percentage}%` }}
-                      title={`第${index + 1}行: ${line.type === 'removed' ? '删除' : line.type === 'added' ? '新增' : line.type === 'context' ? '上下文' : '修改'}`}
+                      title={`第${index + 1}行: ${hasRemoved ? '删除' : '新增'}`}
                       onClick={() => {
-                        const contentEl = document.getElementById(
-                          'unified-diff-content'
-                        );
+                        const contentEl = document.getElementById('unified-diff-content');
                         const lineHeight = 18;
                         if (contentEl) {
                           contentEl.scrollTop = index * lineHeight;
@@ -340,16 +302,38 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
                     />
                   );
                 }
+              } else {
+                // 单一类型的变化
+                const markerColor = line.type === 'removed'
+                  ? 'bg-red-400'
+                  : line.type === 'added'
+                  ? 'bg-green-400'
+                  : 'bg-blue-400';
 
-                return markerElement;
-              })}
-            </div>
+                markerElement = (
+                  <div
+                    key={index}
+                    className={`absolute w-3 h-1 ${markerColor} rounded-sm mx-0.5 cursor-pointer hover:w-4 transition-all`}
+                    style={{ top: `${percentage}%` }}
+                    title={`第${index + 1}行: ${line.type === 'removed' ? '删除' : line.type === 'added' ? '新增' : line.type === 'context' ? '上下文' : '修改'}`}
+                    onClick={() => {
+                      const contentEl = document.getElementById('unified-diff-content');
+                      const lineHeight = 18;
+                      if (contentEl) {
+                        contentEl.scrollTop = index * lineHeight;
+                      }
+                    }}
+                  />
+                );
+              }
+
+              return markerElement;
+            })}
           </div>
         </div>
-      );
-    },
-    []
-  );
+      </div>
+    );
+  }, []);
 
   return (
     <div className={`max-w-7xl mx-auto p-6 ${className}`}>
@@ -504,7 +488,7 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
             {snap.results.map(result => (
               <ResultTab
                 key={result.id}
-                result={result}
+                result={result as any}
                 isActive={result.id === snap.currentResult?.id}
                 onSelect={id => JSDiffTool.setCurrentResult(id)}
                 onRemove={id => JSDiffTool.removeResult(id)}
@@ -537,7 +521,7 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
                 </button>
               </div>
 
-              <DiffStats result={snap.currentResult} />
+              <DiffStats result={snap.currentResult as any} />
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-4">
