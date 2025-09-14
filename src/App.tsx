@@ -5,6 +5,8 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import About from './pages/About';
 import FormPage from './pages/FormPage';
+import JsonDiffPage from './pages/JsonDiffPage';
+import JSDiffPage from './pages/JSDiffPage';
 import WebVitalsDisplay from './components/WebVitalsDisplay';
 
 /**
@@ -75,6 +77,8 @@ const App: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/form" element={<FormPage />} />
+            <Route path="/json-diff" element={<JsonDiffPage />} />
+            <Route path="/jsdiff" element={<JSDiffPage />} />
             {/* 404 页面 */}
             <Route
               path="*"
@@ -98,7 +102,7 @@ const App: React.FC = () => {
           </Routes>
         </Layout>
       </Router>
-      
+
       {/* Web Vitals 性能监控显示组件 (仅开发环境) */}
       <WebVitalsDisplay position="bottom-right" />
     </ErrorBoundary>

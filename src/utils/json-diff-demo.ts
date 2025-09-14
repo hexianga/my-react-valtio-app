@@ -1,4 +1,3 @@
-import { test, expect } from '@playwright/test';
 import { proxy, snapshot } from 'valtio';
 
 // JSON Diff 类型定义
@@ -12,14 +11,14 @@ interface DiffResult {
 }
 
 // 创建 valtio store 来存储 diff 结果
-const diffStore = proxy({
+export const diffStore = proxy({
   results: [] as DiffResult[],
   beforeData: null as any,
   afterData: null as any,
 });
 
-// JSON Diff 工具函数
-class JsonDiffer {
+// JSON Diff 工具类
+export class JsonDiffer {
   private static createPath(path: string[]): string {
     return path.length > 0 ? path.join('.') : 'root';
   }
@@ -211,202 +210,120 @@ class JsonDiffer {
   }
 }
 
-/**
- * 应用基础功能测试
- */
-test.describe('应用基础功能', () => {
-  test('页面正常加载', async ({ page }) => {
-    await page.goto('/');
+// 演示数据
+export const demoData = {
+  before: [
+    {
+      name: 'a',
+      version: '1.0.0',
+      children: [
+        {
+          name: 'b',
+          version: '1.0.0',
+          children: [
+            {
+              name: 'c',
+              version: '1.0.0',
+            },
+          ],
+        },
+        {
+          name: 'd',
+          version: '1.0.0',
+          children: [
+            {
+              name: 'e',
+              version: '1.0.0',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'f',
+      version: '1.0.0',
+      children: [
+        {
+          name: 'g',
+          version: '1.0.0',
+          children: [
+            {
+              name: 'h',
+              version: '1.0.0',
+            },
+          ],
+        },
+        {
+          name: 'i',
+          version: '1.0.0',
+          children: [
+            {
+              name: 'j',
+              version: '1.0.0',
+            },
+          ],
+        },
+      ],
+    },
+  ],
 
-    // 检查页面标题
-    await expect(page).toHaveTitle(/React Valtio App/);
+  after: [
+    {
+      name: 'f',
+      version: '1.0.0',
+      children: [
+        {
+          name: 'g',
+          version: '1.0.0',
+          children: [
+            {
+              name: 'h',
+              version: '1.0.1',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'a',
+      version: '1.0.0',
+      children: [
+        {
+          name: 'b',
+          version: '1.0.0',
+          children: [
+            {
+              name: 'c',
+              version: '1.0.0',
+            },
+          ],
+        },
+        {
+          name: 'd',
+          version: '1.0.2',
+          children: [
+            {
+              name: 'e',
+              version: '1.0.0',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
 
-    // 检查主要内容存在
-    await expect(page.locator('body')).toBeVisible();
-  });
+// 使用示例
+export function runDemo() {
+  console.log('开始 JSON Diff 演示...\n');
 
-  test('导航功能正常', async ({ page }) => {
-    await page.goto('/');
+  // 执行 diff 并更新 valtio store
+  JsonDiffer.updateStore(demoData.before, demoData.after);
 
-    // 查找并点击导航链接（如果存在）
-    const homeLink = page.locator('a[href="/"]').first();
-    if (await homeLink.isVisible()) {
-      await homeLink.click();
-      await expect(page.url()).toBe('http://127.0.0.1:3004/');
-    }
+  // 获取结果
+  const results = JsonDiffer.formatResults();
+  console.log(results);
 
-    // 检查关于页面导航
-    const aboutLink = page.locator('a[href="/about"]').first();
-    if (await aboutLink.isVisible()) {
-      await aboutLink.click();
-      await page.waitForURL('/about');
-      await expect(page.url()).toContain('/about');
-    }
-  });
-
-  test('响应式设计检查', async ({ page }) => {
-    await page.goto('/');
-
-    // 桌面端视图
-    await page.setViewportSize({ width: 1920, height: 1080 });
-    await expect(page.locator('body')).toBeVisible();
-
-    // 平板端视图
-    await page.setViewportSize({ width: 768, height: 1024 });
-    await expect(page.locator('body')).toBeVisible();
-
-    // 移动端视图
-    await page.setViewportSize({ width: 375, height: 667 });
-    await expect(page.locator('body')).toBeVisible();
-  });
-});
-
-const before = [
-  {
-    name: 'a',
-    version: '1.0.0',
-    children: [
-      {
-        name: 'b',
-        version: '1.0.0',
-        children: [
-          {
-            name: 'c',
-            version: '1.0.0',
-          },
-        ],
-      },
-      {
-        name: 'd',
-        version: '1.0.0',
-        children: [
-          {
-            name: 'e',
-            version: '1.0.0',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    name: 'f',
-    version: '1.0.0',
-    children: [
-      {
-        name: 'g',
-        version: '1.0.0',
-        children: [
-          {
-            name: 'h',
-            version: '1.0.0',
-          },
-        ],
-      },
-      {
-        name: 'i',
-        version: '1.0.0',
-        children: [
-          {
-            name: 'j',
-            version: '1.0.0',
-          },
-        ],
-      },
-    ],
-  },
-];
-
-const after = [
-  {
-    name: 'f',
-    version: '1.0.0',
-    children: [
-      {
-        name: 'g',
-        version: '1.0.0',
-        children: [
-          {
-            name: 'h',
-            version: '1.0.1',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    name: 'a',
-    version: '1.0.0',
-    children: [
-      {
-        name: 'b',
-        version: '1.0.0',
-        children: [
-          {
-            name: 'c',
-            version: '1.0.0',
-          },
-        ],
-      },
-      {
-        name: 'd',
-        version: '1.0.2',
-        children: [
-          {
-            name: 'e',
-            version: '1.0.0',
-          },
-        ],
-      },
-    ],
-  },
-];
-
-/**
- * JSON Diff 功能测试
- */
-test.describe('JSON Diff 功能', () => {
-  test('应该正确比较两个 JSON 对象的差异', async () => {
-    // 使用 JsonDiffer 比较 before 和 after 数据
-    JsonDiffer.updateStore(before, after);
-
-    // 获取 diff 结果快照
-    const snapshot = JsonDiffer.getSnapshot();
-
-    // 验证存储了正确的数据
-    expect(snapshot.beforeData).toEqual(before);
-    expect(snapshot.afterData).toEqual(after);
-
-    // 验证检测到了变化
-    expect(snapshot.results.length).toBeGreaterThan(0);
-
-    // 输出格式化的差异结果
-    const formattedResults = JsonDiffer.formatResults();
-    console.log('\n=== JSON Diff 结果 ===');
-    console.log(formattedResults);
-
-    // 验证特定的变化
-    const results = snapshot.results;
-
-    // 检查是否检测到版本变化
-    const versionChanges = results.filter(
-      r => r.type === 'modified' && r.path.includes('version')
-    );
-    expect(versionChanges.length).toBeGreaterThan(0);
-
-    // 检查是否检测到元素移动
-    const movedElements = results.filter(r => r.type === 'moved');
-    expect(movedElements.length).toBeGreaterThan(0);
-
-    // 检查是否检测到删除的元素
-    const removedElements = results.filter(r => r.type === 'removed');
-    expect(removedElements.length).toBeGreaterThan(0);
-  });
-
-  test('应该正确处理相同的对象', async () => {
-    JsonDiffer.updateStore(before, before);
-    const snapshot = JsonDiffer.getSnapshot();
-
-    expect(snapshot.results.length).toBe(0);
-    expect(JsonDiffer.formatResults()).toBe('没有发现差异');
-  });
-});
+  // 返回 valtio store 的快照供进一步使用
+  return JsonDiffer.getSnapshot();
+}
