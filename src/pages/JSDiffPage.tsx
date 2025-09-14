@@ -1,9 +1,9 @@
 import React from 'react';
-import JSDiffViewer from '../components/JSDiffViewerFixed';
+import JSDiffViewer from '../components/JSDiff';
 
 const JSDiffPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div>
       <JSDiffViewer />
     </div>
   );
