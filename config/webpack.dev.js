@@ -54,7 +54,7 @@ module.exports = merge(commonConfig, {
       directory: path.resolve(__dirname, '../public'),
     },
     compress: true,
-    port: 3004,
+    port: process.env.PORT || 3005,
     hot: true, // 🔥 启用热更新
     historyApiFallback: true,
     open: true,

@@ -21,13 +21,29 @@ export interface UnifiedDiffLine {
   }>;
 }
 
+export interface SplitDiffView {
+  leftLines: Array<{
+    lineNumber: number | null;
+    content: string;
+    type: 'removed' | 'unchanged' | 'empty';
+    highlightRanges?: Array<{ start: number; end: number }>;
+  }>;
+  rightLines: Array<{
+    lineNumber: number | null;
+    content: string;
+    type: 'added' | 'unchanged' | 'empty';
+    highlightRanges?: Array<{ start: number; end: number }>;
+  }>;
+}
+
 export interface DiffResult {
   id: string;
   title: string;
   oldContent: string;
   newContent: string;
   changes: DiffChange[];
-  unifiedView: UnifiedDiffLine[]; // 新增统一视图数据
+  unifiedView: UnifiedDiffLine[]; // 统一视图数据
+  splitView: SplitDiffView; // 新增双栏视图数据
   stats: {
     additions: number;
     deletions: number;
@@ -48,6 +64,7 @@ export const diffStore = proxy({
     ignoreCase: false,
     contextLines: 3,
     showInlineDiff: true,
+    viewMode: 'unified' as 'unified' | 'split', // 新增视图模式
   },
 });
 
@@ -141,6 +158,112 @@ export class JSDiffTool {
     return unifiedLines;
   }
 
+  private static generateSplitView(
+    oldContent: string,
+    newContent: string,
+    changes: DiffChange[],
+    diffType: string
+  ): SplitDiffView {
+    const leftLines: SplitDiffView['leftLines'] = [];
+    const rightLines: SplitDiffView['rightLines'] = [];
+    
+    if (diffType === 'lines') {
+      let oldLineNum = 1;
+      let newLineNum = 1;
+      
+      changes.forEach(change => {
+        const lines = change.value.split('\n').filter((line, index, arr) => {
+          return !(index === arr.length - 1 && line === '');
+        });
+        
+        if (change.added) {
+          // 只在右侧显示新增的行
+          lines.forEach(line => {
+            leftLines.push({
+              lineNumber: null,
+              content: '',
+              type: 'empty'
+            });
+            rightLines.push({
+              lineNumber: newLineNum,
+              content: line,
+              type: 'added'
+            });
+            newLineNum++;
+          });
+        } else if (change.removed) {
+          // 只在左侧显示删除的行
+          lines.forEach(line => {
+            leftLines.push({
+              lineNumber: oldLineNum,
+              content: line,
+              type: 'removed'
+            });
+            rightLines.push({
+              lineNumber: null,
+              content: '',
+              type: 'empty'
+            });
+            oldLineNum++;
+          });
+        } else {
+          // 双侧都显示未变化的行
+          lines.forEach(line => {
+            leftLines.push({
+              lineNumber: oldLineNum,
+              content: line,
+              type: 'unchanged'
+            });
+            rightLines.push({
+              lineNumber: newLineNum,
+              content: line,
+              type: 'unchanged'
+            });
+            oldLineNum++;
+            newLineNum++;
+          });
+        }
+      });
+    } else {
+      // 非行模式：合并到一行中，但在双栏中分别显示
+      let leftContent = '';
+      let rightContent = '';
+      const leftHighlights: Array<{ start: number; end: number }> = [];
+      const rightHighlights: Array<{ start: number; end: number }> = [];
+      
+      changes.forEach(change => {
+        if (change.removed) {
+          const start = leftContent.length;
+          leftContent += change.value;
+          leftHighlights.push({ start, end: leftContent.length });
+        } else if (change.added) {
+          const start = rightContent.length;
+          rightContent += change.value;
+          rightHighlights.push({ start, end: rightContent.length });
+        } else {
+          leftContent += change.value;
+          rightContent += change.value;
+        }
+      });
+      
+      leftLines.push({
+        lineNumber: 1,
+        content: leftContent,
+        type: leftHighlights.length > 0 ? 'removed' : 'unchanged',
+        highlightRanges: leftHighlights
+      });
+      
+      rightLines.push({
+        lineNumber: 1,
+        content: rightContent,
+        type: rightHighlights.length > 0 ? 'added' : 'unchanged',
+        highlightRanges: rightHighlights
+      });
+    }
+    
+    return { leftLines, rightLines };
+  }
+
   private static calculateStats(changes: DiffChange[]): {
     additions: number;
     deletions: number;
@@ -205,6 +328,13 @@ export class JSDiffTool {
         'chars'
       );
 
+      const splitView = this.generateSplitView(
+        oldStr,
+        newStr,
+        changes,
+        'chars'
+      );
+
       const result: DiffResult = {
         id: this.generateId(),
         title,
@@ -212,6 +342,7 @@ export class JSDiffTool {
         newContent: newStr,
         changes,
         unifiedView,
+        splitView,
         stats,
         timestamp: Date.now(),
         diffType: 'chars',
@@ -256,6 +387,13 @@ export class JSDiffTool {
         'words'
       );
 
+      const splitView = this.generateSplitView(
+        oldStr,
+        newStr,
+        changes,
+        'words'
+      );
+
       const result: DiffResult = {
         id: this.generateId(),
         title,
@@ -263,6 +401,7 @@ export class JSDiffTool {
         newContent: newStr,
         changes,
         unifiedView,
+        splitView,
         stats,
         timestamp: Date.now(),
         diffType: 'words',
@@ -307,6 +446,13 @@ export class JSDiffTool {
         'lines'
       );
 
+      const splitView = this.generateSplitView(
+        oldStr,
+        newStr,
+        changes,
+        'lines'
+      );
+
       const result: DiffResult = {
         id: this.generateId(),
         title,
@@ -314,6 +460,7 @@ export class JSDiffTool {
         newContent: newStr,
         changes,
         unifiedView,
+        splitView,
         stats,
         timestamp: Date.now(),
         diffType: 'lines',
@@ -358,6 +505,13 @@ export class JSDiffTool {
         'json'
       );
 
+      const splitView = this.generateSplitView(
+        oldStr,
+        newStr,
+        changes,
+        'json'
+      );
+
       const result: DiffResult = {
         id: this.generateId(),
         title,
@@ -365,6 +519,7 @@ export class JSDiffTool {
         newContent: newStr,
         changes,
         unifiedView,
+        splitView,
         stats,
         timestamp: Date.now(),
         diffType: 'json',
@@ -404,6 +559,13 @@ export class JSDiffTool {
         'css'
       );
 
+      const splitView = this.generateSplitView(
+        oldCss,
+        newCss,
+        changes,
+        'css'
+      );
+
       const result: DiffResult = {
         id: this.generateId(),
         title,
@@ -411,6 +573,7 @@ export class JSDiffTool {
         newContent: newCss,
         changes,
         unifiedView,
+        splitView,
         stats,
         timestamp: Date.now(),
         diffType: 'css',
@@ -450,6 +613,13 @@ export class JSDiffTool {
         'sentences'
       );
 
+      const splitView = this.generateSplitView(
+        oldStr,
+        newStr,
+        changes,
+        'sentences'
+      );
+
       const result: DiffResult = {
         id: this.generateId(),
         title,
@@ -457,6 +627,7 @@ export class JSDiffTool {
         newContent: newStr,
         changes,
         unifiedView,
+        splitView,
         stats,
         timestamp: Date.now(),
         diffType: 'sentences',

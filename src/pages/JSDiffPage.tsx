@@ -1,5 +1,5 @@
 import React from 'react';
-import JSDiffViewer from '../components/JSDiffViewer';
+import JSDiffViewer from '../components/JSDiffViewerFixed';
 
 const JSDiffPage: React.FC = () => {
   return (
