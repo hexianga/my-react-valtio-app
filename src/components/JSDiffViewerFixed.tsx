@@ -12,6 +12,9 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
   const [newContent, setNewContent] = useState<string>('');
   const [diffType, setDiffType] = useState<'chars' | 'words' | 'lines' | 'json' | 'css' | 'sentences'>('lines');
   const [title, setTitle] = useState<string>('');
+  const [showPatchModal, setShowPatchModal] = useState<boolean>(false);
+  const [patchContent, setPatchContent] = useState<string>('');
+  const [fileName, setFileName] = useState<string>('example.txt');
 
   const handleCompare = () => {
     if (!oldContent.trim() || !newContent.trim()) {
@@ -79,7 +82,34 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
     setOldContent('');
     setNewContent('');
     setTitle('');
+    setFileName('example.txt');
     JSDiffTool.clearResults();
+  };
+
+  // 生成 patch 格式输出
+  const generatePatch = () => {
+    if (!snap.currentResult) return;
+
+    const patch = JSDiffTool.createPatch(
+      fileName,
+      snap.currentResult.oldContent,
+      snap.currentResult.newContent
+    );
+
+    setPatchContent(patch);
+    setShowPatchModal(true);
+  };
+
+  // 复制 patch 内容到剪贴板
+  const copyPatchToClipboard = () => {
+    navigator.clipboard.writeText(patchContent).then(
+      () => {
+        alert('Patch 已复制到剪贴板！');
+      },
+      (err) => {
+        console.error('复制失败:', err);
+      }
+    );
   };
 
   // 双栏视图渲染 - 使用真实的splitView数据
@@ -478,6 +508,67 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
     </button>
   );
 
+  // Patch 格式模态框
+  const renderPatchModal = () => {
+    if (!showPatchModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+          <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+            <h3 className="text-xl font-medium text-gray-900">Patch 格式输出</h3>
+            <button
+              onClick={() => setShowPatchModal(false)}
+              className="text-gray-400 hover:text-gray-500"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-auto p-6">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700">文件名:</label>
+                <input
+                  type="text"
+                  value={fileName}
+                  onChange={(e) => setFileName(e.target.value)}
+                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                />
+                <button
+                  onClick={generatePatch}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                >
+                  重新生成
+                </button>
+              </div>
+              <button
+                onClick={copyPatchToClipboard}
+                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+              >
+                <span>📋</span>
+                <span>复制到剪贴板</span>
+              </button>
+            </div>
+
+            <pre className="bg-gray-50 border border-gray-200 rounded-lg p-4 overflow-auto text-xs font-mono whitespace-pre max-h-[60vh]">
+              {patchContent}
+            </pre>
+          </div>
+
+          <div className="border-t border-gray-200 px-6 py-4 flex justify-end">
+            <button
+              onClick={() => setShowPatchModal(false)}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded"
+            >
+              关闭
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className={`max-w-7xl mx-auto p-6 ${className}`}>
       <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
@@ -662,13 +753,24 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
           {/* 当前结果内容 */}
           {snap.currentResult && (
             <div className="p-6">
-              <div className="mb-4">
-                <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                  {snap.currentResult.title}
-                </h2>
-                <p className="text-sm text-gray-500">
-                  比较时间: {new Date(snap.currentResult.timestamp).toLocaleString()}
-                </p>
+              <div className="mb-4 flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                    {snap.currentResult.title}
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    比较时间: {new Date(snap.currentResult.timestamp).toLocaleString()}
+                  </p>
+                </div>
+
+                {/* 新增 Patch 格式输出按钮 */}
+                <button
+                  onClick={generatePatch}
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2"
+                >
+                  <span>📝</span>
+                  <span>生成 Patch 格式</span>
+                </button>
               </div>
 
               {renderStats(snap.currentResult)}
@@ -834,6 +936,9 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
           <p className="text-sm mt-2">选择比较类型，输入内容，然后点击比较按钮</p>
         </div>
       )}
+
+      {/* Patch 格式模态框 */}
+      {renderPatchModal()}
     </div>
   );
 };
