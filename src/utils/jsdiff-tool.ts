@@ -171,7 +171,29 @@ export class JSDiffTool {
       let oldLineNum = 1;
       let newLineNum = 1;
       
+      // 预处理变更，将连续的相同类型的变更合并
+      const mergedChanges: DiffChange[] = [];
+      let currentChange: DiffChange | null = null;
+
       changes.forEach(change => {
+        if (!currentChange) {
+          currentChange = { ...change };
+          mergedChanges.push(currentChange);
+        } else if (
+          (change.added && currentChange.added) ||
+          (change.removed && currentChange.removed)
+        ) {
+          // 如果当前变更与上一个变更类型相同（都是添加或都是删除），则合并
+          currentChange.value += change.value;
+        } else {
+          // 否则添加为新的变更
+          currentChange = { ...change };
+          mergedChanges.push(currentChange);
+        }
+      });
+
+      // 使用合并后的变更生成视图
+      mergedChanges.forEach(change => {
         const lines = change.value.split('\n').filter((line, index, arr) => {
           return !(index === arr.length - 1 && line === '');
         });
@@ -495,21 +517,26 @@ export class JSDiffTool {
       const newStr =
         typeof newObj === 'string' ? newObj : JSON.stringify(newObj, null, 2);
 
-      const rawChanges = Diff.diffJson(oldObj, newObj);
-      const changes = this.processChanges(rawChanges, 'json');
+      // 使用行差异比较而不是JSON差异比较，以便更好地显示JSON差异
+      const rawChanges = Diff.diffLines(oldStr, newStr, {
+        ignoreWhitespace: diffStore.settings.ignoreWhitespace,
+        newlineIsToken: true,
+      });
+
+      const changes = this.processChanges(rawChanges, 'lines');
       const stats = this.calculateStats(changes);
       const unifiedView = this.generateUnifiedView(
         oldStr,
         newStr,
         changes,
-        'json'
+        'lines'
       );
 
       const splitView = this.generateSplitView(
         oldStr,
         newStr,
         changes,
-        'json'
+        'lines'
       );
 
       const result: DiffResult = {
@@ -702,6 +729,15 @@ export class JSDiffTool {
   }
 
   /**
+   * 根据ID获取差异比较结果
+   * @param resultId 结果ID
+   * @returns 差异比较结果，如果未找到则返回null
+   */
+  static getResult(resultId: string): DiffResult | null {
+    return diffStore.results.find(r => r.id === resultId) || null;
+  }
+
+  /**
    * 更新设置
    */
   static updateSettings(newSettings: Partial<typeof diffStore.settings>): void {
@@ -726,13 +762,13 @@ export class JSDiffTool {
     output += `时间: ${new Date(result.timestamp).toLocaleString()}\n`;
     output += `统计: +${result.stats.additions} -${result.stats.deletions} (共${result.stats.total}个变化)\n\n`;
 
-    result.changes.forEach(change => {
-      const prefix = change.added ? '+' : change.removed ? '-' : ' ';
-      const value = change.value.replace(/\n$/, '');
-      if (value) {
-        output += `${prefix} ${value}\n`;
-      }
-    });
+      result.changes.forEach(change => {
+        const prefix = change.added ? '+' : change.removed ? '-' : ' ';
+        const value = change.value.replace(/\n$/, '');
+        if (value) {
+          output += `${prefix} ${value}\n`;
+        }
+      });
 
     return output;
   }
@@ -807,7 +843,7 @@ End of file`,
 }`,
 };
 
-// 使用示例函数
+  // 使用示例函数
 export function runDemoComparisons() {
   console.log('🚀 开始 JSDiff 工具演示...\n');
 

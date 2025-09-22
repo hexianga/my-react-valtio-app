@@ -20,7 +20,7 @@ test.describe('用户表单功能', () => {
     await expect(formTitle).toBeVisible();
   });
 
-  test('表单输入验证', async ({ page }) => {
+  test('表单输入验证', { tag: "@表单输入" }, async ({ page }) => {
     // 查找表单字段（Formily 生成的字段结构）
     const nameInput = page
       .locator('[data-path="name"] input, input[placeholder*="姓名"]')

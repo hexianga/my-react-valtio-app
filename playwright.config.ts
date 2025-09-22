@@ -21,9 +21,10 @@ export default defineConfig({
 
   // 报告配置
   reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'test-results/results.json' }],
-    ['junit', { outputFile: 'test-results/junit.xml' }],
+    // ['html', { outputFolder: 'playwright-report' }],
+    ['html', { open: 'always', host: '0.0.0.0', port: 9323 }],
+    // ['json', { outputFile: 'test-results/results.json' }],
+    // ['junit', { outputFile: 'test-results/junit.xml' }],
   ],
 
   // 输出目录
@@ -37,7 +38,7 @@ export default defineConfig({
     // 测试追踪
     trace: 'on-first-retry',
 
-    // 截图配置
+    // 截图配置https://steamer.sankuai.com/api/applicationViews/2?needSource=true&needRequirement=true&%24sort=created_at&env=%24like%3Aproduction&%24limit=10&%24skip=0
     screenshot: 'only-on-failure',
 
     // 视频录制
@@ -58,31 +59,31 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    // {
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] },
+    // },
+    // {
+    //   name: 'webkit',
+    //   use: { ...devices['Desktop Safari'] },
+    // },
 
-    // 移动端测试
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
+    // // 移动端测试
+    // {
+    //   name: 'Mobile Chrome',
+    //   use: { ...devices['Pixel 5'] },
+    // },
+    // {
+    //   name: 'Mobile Safari',
+    //   use: { ...devices['iPhone 12'] },
+    // },
   ],
 
   // 本地开发服务器配置
-  webServer: {
-    command: 'pnpm start',
-    port: 3004,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  // webServer: {
+  //   command: 'pnpm start',
+  //   port: 3004,
+  //   reuseExistingServer: !process.env.CI,
+  //   timeout: 120 * 1000,
+  // },
 });

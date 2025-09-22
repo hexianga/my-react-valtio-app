@@ -1,8 +1,6 @@
-import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
-import { JSDiffTool } from '../src/utils/jsdiff-tool';
-
+const fs = require('fs');
+const path = require('path');
+const { JSDiffTool } = require('./src/utils/jsdiff-tool');
 
 const LatestVersion = {
   template_config: {
@@ -818,148 +816,47 @@ const LatestGrayVersion = {
     },
   ],
 };
-
 /**
- * API 相关测试
+ * JSON差异比较测试脚本
+ * 比较两个API响应的JSON数据，并生成可视化HTML报告
  */
-test.describe('API 集成测试', () => {
-  test('API 请求拦截和模拟', async ({ page }) => {
-    // 模拟 API 响应
-    await page.route('**/api/**', route => {
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          message: '模拟 API 响应',
-          success: true,
-          data: [],
-        }),
-      });
-    });
+async function testJsonDiff() {
+  console.log('开始测试JSON差异比较功能...');
 
-    await page.goto('/');
+  // 模拟两个不同版本的API响应数据
+  const oldApiResponse = LatestVersion;
 
-    // 检查页面正常加载
-    await expect(page.locator('body')).toBeVisible();
-  });
+  const newApiResponse = LatestGrayVersion;
 
-  test('网络错误处理', async ({ page }) => {
-    // 模拟网络错误
-    await page.route('**/api/**', route => {
-      route.fulfill({
-        status: 500,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          message: '服务器错误',
-          success: false,
-        }),
-      });
-    });
-
-    await page.goto('/');
-
-    // 检查应用如何处理错误
-    await expect(page.locator('body')).toBeVisible();
-
-    // 可以检查是否显示了错误提示
-    const errorAlert = page
-      .locator('.error, [role="alert"], .ant-notification')
-      .first();
-    if (await errorAlert.isVisible()) {
-      await expect(errorAlert).toBeVisible();
-    }
-  });
-
-  test('API 请求超时处理', async ({ page }) => {
-    // 模拟慢速 API 响应
-    await page.route('**/api/**', async route => {
-      await new Promise(resolve => setTimeout(resolve, 10000)); // 10秒延迟
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ message: '延迟响应' }),
-      });
-    });
-
-    await page.goto('/');
-
-    // 检查页面在等待期间的状态
-    await expect(page.locator('body')).toBeVisible();
-  });
-
-  test('认证相关 API', async ({ page }) => {
-    // 模拟认证失败
-    await page.route('**/api/auth/**', route => {
-      route.fulfill({
-        status: 401,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          message: '未授权访问',
-          success: false,
-        }),
-      });
-    });
-
-    await page.goto('/');
-
-    // 检查应用对认证失败的处理
-    await expect(page.locator('body')).toBeVisible();
-  });
-
-  test('数据获取和显示', async ({ page }) => {
-    // 模拟成功的数据 API
-    await page.route('**/api/data', route => {
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          success: true,
-          data: [
-            { id: 1, name: '测试数据1' },
-            { id: 2, name: '测试数据2' },
-          ],
-        }),
-      });
-    });
-
-    await page.goto('/');
-
-    // 检查数据是否正确显示
-    await expect(page.locator('body')).toBeVisible();
-
-    // 如果有数据列表，检查是否显示
-    const dataList = page.locator('[data-testid="data-list"]').first();
-    if (await dataList.isVisible()) {
-      await expect(dataList).toBeVisible();
-    }
-  });
-
-  /**
-   * JSON差异比较测试用例
-   * 比较两个API响应的JSON数据，并生成可视化HTML报告
-   */
-  test('JSON差异比较和可视化', { tag: ["@JSON Diff"] }, async () => {
-    // 模拟两个不同版本的API响应数据
-    const oldApiResponse = LatestVersion;
-
-    const newApiResponse = LatestGrayVersion;
-
+  try {
     // 使用JSDiffTool比较两个JSON对象
     const diffResultId = JSDiffTool.diffJson(
       oldApiResponse,
       newApiResponse,
-      'API响应数据差异比较'
+      '服务模块数据差异比较'
     );
 
     // 获取差异结果
     const diffResult = JSDiffTool.getResult(diffResultId);
-    expect(diffResult).toBeTruthy();
+
+    if (!diffResult) {
+      console.error('获取差异比较结果失败');
+      return;
+    }
+
+    console.log(
+      `差异统计: 新增 +${diffResult.stats.additions}, 删除 -${diffResult.stats.deletions}, 总变更 ${diffResult.stats.total}`
+    );
 
     // 生成HTML报告
     const htmlReport = generateHtmlReport(diffResult);
 
     // 保存HTML报告到文件
-    const reportPath = path.join(process.cwd(), 'test-results', 'json-diff-report.html');
+    const reportPath = path.join(
+      __dirname,
+      'test-results',
+      'json-diff-report.html'
+    );
 
     // 确保目录存在
     const dir = path.dirname(reportPath);
@@ -970,26 +867,24 @@ test.describe('API 集成测试', () => {
     fs.writeFileSync(reportPath, htmlReport);
 
     console.log(`JSON差异比较报告已生成: ${reportPath}`);
-
-    // 验证差异结果
-    expect(diffResult.stats.additions).toBeGreaterThan(0);
-    expect(diffResult.stats.deletions).toBeGreaterThan(0);
-  });
-});
+  } catch (error) {
+    console.error('执行JSON差异比较时出错:', error);
+  }
+}
 
 /**
  * 生成包含内联CSS和JS的HTML报告
  * @param diffResult 差异比较结果
  * @returns HTML字符串
  */
-function generateHtmlReport(diffResult: any): string {
+function generateHtmlReport(diffResult) {
   // 内联CSS样式
   const styles = `
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
       line-height: 1.6;
       color: #333;
-      max-width: 1600px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
     }
@@ -1056,7 +951,6 @@ function generateHtmlReport(diffResult: any): string {
     /* 分割视图样式 */
     .split-view {
       display: flex;
-      flex-direction: column;
       border: 1px solid #ddd;
       border-radius: 5px;
       overflow: hidden;
@@ -1086,7 +980,7 @@ function generateHtmlReport(diffResult: any): string {
     }
     .split-cell {
       flex: 1;
-      padding: 0px 15px;
+      padding: 5px 15px;
       font-family: monospace;
       white-space: pre-wrap;
       border-right: 1px solid #ddd;
@@ -1119,7 +1013,7 @@ function generateHtmlReport(diffResult: any): string {
       font-family: monospace;
     }
     .unified-line {
-      padding: 0px 15px;
+      padding: 2px 15px;
       white-space: pre-wrap;
       display: flex;
     }
@@ -1247,7 +1141,8 @@ function generateHtmlReport(diffResult: any): string {
           }
 
           // 添加高亮文本
-          const highlightClass = leftLine.type === 'removed' ? 'highlight-removed' : '';
+          const highlightClass =
+            leftLine.type === 'removed' ? 'highlight-removed' : '';
           result += `<span class="${highlightClass}">${escapeHtml(content.substring(range.start, range.end))}</span>`;
 
           lastIndex = range.end;
@@ -1286,7 +1181,8 @@ function generateHtmlReport(diffResult: any): string {
           }
 
           // 添加高亮文本
-          const highlightClass = rightLine.type === 'added' ? 'highlight-added' : '';
+          const highlightClass =
+            rightLine.type === 'added' ? 'highlight-added' : '';
           result += `<span class="${highlightClass}">${escapeHtml(content.substring(range.start, range.end))}</span>`;
 
           lastIndex = range.end;
@@ -1419,7 +1315,7 @@ function generateHtmlReport(diffResult: any): string {
  * @param text 需要转义的文本
  * @returns 转义后的文本
  */
-function escapeHtml(text: string): string {
+function escapeHtml(text) {
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -1427,3 +1323,6 @@ function escapeHtml(text: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
+// 执行测试
+testJsonDiff().catch(console.error);

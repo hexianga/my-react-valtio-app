@@ -54,7 +54,7 @@ module.exports = merge(commonConfig, {
       directory: path.resolve(__dirname, '../public'),
     },
     compress: true,
-    port: process.env.PORT || 3005,
+    port: process.env.PORT || 3000,
     hot: true, // 🔥 启用热更新
     historyApiFallback: true,
     open: true,
@@ -67,7 +67,7 @@ module.exports = merge(commonConfig, {
     // 🔧 API 代理配置（可选）
     proxy: {
       '/api': {
-        target: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001',
+        target: process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:3001',
         changeOrigin: true,
         secure: false,
       },

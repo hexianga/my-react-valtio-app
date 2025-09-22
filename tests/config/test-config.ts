@@ -3,7 +3,7 @@
  */
 export const TEST_CONFIG = {
   // 基础配置
-  baseURL: process.env.BASE_URL || 'http://localhost:3000',
+  baseURL: process.env.BASE_URL || 'http://127.0.0.1:3000',
 
   // 超时配置
   timeouts: {

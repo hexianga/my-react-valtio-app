@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useSnapshot } from 'valtio';
 import { diffStore, JSDiffTool, demoData } from '../../../utils/jsdiff-tool';
+import { ALL_VERSIONS } from '../data/applicationViews';
 
 /**
  * 差异比较逻辑钩子
@@ -68,13 +69,22 @@ export const useDiffComparison = () => {
         setTitle('文本行差异演示');
         setFileName('example.txt');
         break;
-      case 'json':
-        setOldContent(JSON.stringify(demoData.json1, null, 2));
-        setNewContent(JSON.stringify(demoData.json2, null, 2));
+      case 'json': {
+        const latestVersion = ALL_VERSIONS.rows.find(item => item.message.includes('全量'))?.services
+        const latestGrayVersion = ALL_VERSIONS.rows.find(item => item.message.includes('灰度'))?.services
+        setOldContent(JSON.stringify({service: latestGrayVersion},  null, 2));
+        setNewContent(JSON.stringify({service: latestVersion},  null, 2));
+
+        // setOldContent(JSON.stringify(demoData.json1, null, 2));
+        // setNewContent(JSON.stringify(demoData.json2, null, 2));
+
+        console.log('latestVersion', latestVersion, latestGrayVersion, JSON.stringify(demoData.json1, null, 2), JSON.stringify(demoData.json2, null, 2))
+
         setDiffType('json');
         setTitle('JSON对象差异演示');
         setFileName('example.json');
         break;
+      }
       case 'css':
         setOldContent(demoData.css1);
         setNewContent(demoData.css2);
