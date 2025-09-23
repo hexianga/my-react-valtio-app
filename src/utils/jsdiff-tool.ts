@@ -145,7 +145,7 @@ export class JSDiffTool {
           : change.removed
             ? 'removed'
             : 'unchanged';
-        currentLine.innerChanges!.push({
+        currentLine.innerChanges?.push({
           type,
           content: change.value,
         });
