@@ -17,13 +17,13 @@ const PatchModal: React.FC<PatchModalProps> = ({
   setFileName,
   patchContent,
   onRegenerate,
-  onCopy
+  onCopy,
 }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-lg shadow-xl w-full  max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
           <h3 className="text-xl font-medium text-gray-900">Patch 格式输出</h3>
           <button
@@ -37,12 +37,17 @@ const PatchModal: React.FC<PatchModalProps> = ({
         <div className="flex-1 overflow-auto p-6">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
-              <label htmlFor="fileName" className="text-sm font-medium text-gray-700">文件名:</label>
+              <label
+                htmlFor="fileName"
+                className="text-sm font-medium text-gray-700"
+              >
+                文件名:
+              </label>
               <input
                 id="fileName"
                 type="text"
                 value={fileName}
-                onChange={(e) => setFileName(e.target.value)}
+                onChange={e => setFileName(e.target.value)}
                 className="border border-gray-300 rounded px-2 py-1 text-sm"
               />
               <button

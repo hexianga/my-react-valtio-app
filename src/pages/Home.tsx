@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAppState } from '../hooks';
 import { actions } from '../store';
+import CoreWebVitalsWidget from '../components/CoreWebVitalsWidget';
 
 /**
  * 首页组件
@@ -17,9 +18,12 @@ const Home: React.FC = () => {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             React + Valtio + TypeScript
           </h1>
-          <p className="text-lg text-gray-600">
-            现代化的 React 应用开发模板
-          </p>
+          <p className="text-lg text-gray-600">现代化的 React 应用开发模板</p>
+        </div>
+
+        {/* Core Web Vitals 监控 */}
+        <div className="mb-8">
+          <CoreWebVitalsWidget />
         </div>
 
         {/* 功能卡片区域 */}
@@ -29,7 +33,9 @@ const Home: React.FC = () => {
             <h3 className="text-xl font-semibold mb-4">状态管理 (Valtio)</h3>
             <div className="space-y-4">
               <div className="text-center">
-                <span className="text-3xl font-bold text-primary-600">{count}</span>
+                <span className="text-3xl font-bold text-primary-600">
+                  {count}
+                </span>
                 <p className="text-gray-600">计数器</p>
               </div>
               <div className="flex space-x-2">
@@ -121,12 +127,14 @@ const Home: React.FC = () => {
               'Sentry',
               'Axios',
               'ahooks',
-            ].map((tech) => (
+            ].map(tech => (
               <div
                 key={tech}
                 className="bg-gray-100 rounded-lg p-3 text-center"
               >
-                <span className="text-sm font-medium text-gray-700">{tech}</span>
+                <span className="text-sm font-medium text-gray-700">
+                  {tech}
+                </span>
               </div>
             ))}
           </div>

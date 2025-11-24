@@ -7,6 +7,9 @@ import About from './pages/About';
 import FormPage from './pages/FormPage';
 import JsonDiffPage from './pages/JsonDiffPage';
 import JSDiffPage from './pages/JSDiffPage';
+import PerformancePage from './pages/PerformancePage';
+import TypeErrorPage from './pages/TypeErrorPage';
+import JsonParserPage from './pages/JsonParserPage';
 import WebVitalsDisplay from './components/WebVitalsDisplay';
 
 /**
@@ -79,6 +82,9 @@ const App: React.FC = () => {
             <Route path="/form" element={<FormPage />} />
             <Route path="/json-diff" element={<JsonDiffPage />} />
             <Route path="/jsdiff" element={<JSDiffPage />} />
+            <Route path="/performance" element={<PerformancePage />} />
+            <Route path="/type-error" element={<TypeErrorPage />} />
+            <Route path="/json-parser" element={<JsonParserPage />} />
             {/* 404 页面 */}
             <Route
               path="*"

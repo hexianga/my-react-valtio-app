@@ -65,9 +65,7 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
   const renderSplitDiffView = useCallback((result: any) => {
     if (!result.splitView) {
       return (
-        <div className="text-center py-8 text-gray-500">
-          双栏视图数据不可用
-        </div>
+        <div className="text-center py-8 text-gray-500">双栏视图数据不可用</div>
       );
     }
 
@@ -107,14 +105,14 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
           // 单一操作，但检查是否与相邻操作构成替换
           if (hasLeftRemoval) {
             // 这是一个删除行，查看附近是否有新增行
-            const nearbyAddition = addedRanges.some(addedIndex =>
-              Math.abs(addedIndex - i) <= 2 // 在2行范围内
+            const nearbyAddition = addedRanges.some(
+              addedIndex => Math.abs(addedIndex - i) <= 2 // 在2行范围内
             );
             markerType = nearbyAddition ? 'both' : 'removed';
           } else if (hasRightAddition) {
             // 这是一个新增行，查看附近是否有删除行
-            const nearbyRemoval = removedRanges.some(removedIndex =>
-              Math.abs(removedIndex - i) <= 2 // 在2行范围内
+            const nearbyRemoval = removedRanges.some(
+              removedIndex => Math.abs(removedIndex - i) <= 2 // 在2行范围内
             );
             markerType = nearbyRemoval ? 'both' : 'added';
           }
@@ -124,7 +122,7 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
       scrollbarMarkers.push({
         index: i,
         hasChange: hasLeftRemoval || hasRightAddition,
-        type: markerType
+        type: markerType,
       });
     }
 
@@ -175,7 +173,7 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
         <div className="w-4 bg-gray-100 border-l border-gray-200 flex flex-col">
           <div className="h-12 bg-gray-100 border-b border-gray-200"></div>
           <div className="flex-1 relative">
-            {scrollbarMarkers.map((marker) => {
+            {scrollbarMarkers.map(marker => {
               if (!marker.hasChange) return null;
 
               const percentage = (marker.index / leftLines.length) * 100;
@@ -199,9 +197,8 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
                 );
               } else {
                 // 单一类型的变化
-                const markerColor = marker.type === 'removed'
-                  ? 'bg-red-400'
-                  : 'bg-green-400';
+                const markerColor =
+                  marker.type === 'removed' ? 'bg-red-400' : 'bg-green-400';
 
                 return (
                   <div
@@ -239,7 +236,10 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
           </div>
 
           {/* 统一视图内容 - 使用优化的 UnifiedDiffLine 组件 */}
-          <div className="max-h-[800px] overflow-y-auto" id="unified-diff-content">
+          <div
+            className="max-h-[800px] overflow-y-auto"
+            id="unified-diff-content"
+          >
             {result.unifiedView.map((line: any, index: number) => (
               <UnifiedDiffLine key={index} line={line} index={index} />
             ))}
@@ -254,15 +254,24 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
             {result.unifiedView.map((line: any, index: number) => {
               if (line.type === 'unchanged') return null;
 
-              const percentage = (index / (result.unifiedView.length || 1)) * 100;
+              const percentage =
+                (index / (result.unifiedView.length || 1)) * 100;
 
               // 统一视图中的变化一般是单一类型，但可能存在复合情况
               let markerElement;
 
-              if (line.type === 'context' && line.innerChanges && line.innerChanges.length > 0) {
+              if (
+                line.type === 'context' &&
+                line.innerChanges &&
+                line.innerChanges.length > 0
+              ) {
                 // 对于包含内部变化的上下文行，检查是否同时包含删除和新增
-                const hasAdded = line.innerChanges.some((change: any) => change.type === 'added');
-                const hasRemoved = line.innerChanges.some((change: any) => change.type === 'removed');
+                const hasAdded = line.innerChanges.some(
+                  (change: any) => change.type === 'added'
+                );
+                const hasRemoved = line.innerChanges.some(
+                  (change: any) => change.type === 'removed'
+                );
 
                 if (hasAdded && hasRemoved) {
                   // 同时有删除和新增
@@ -273,7 +282,9 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
                       style={{ top: `${percentage}%` }}
                       title={`第${index + 1}行: 删除和新增`}
                       onClick={() => {
-                        const contentEl = document.getElementById('unified-diff-content');
+                        const contentEl = document.getElementById(
+                          'unified-diff-content'
+                        );
                         const lineHeight = 18;
                         if (contentEl) {
                           contentEl.scrollTop = index * lineHeight;
@@ -285,7 +296,9 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
                     </div>
                   );
                 } else {
-                  const markerColor = hasRemoved ? 'bg-red-400' : 'bg-green-400';
+                  const markerColor = hasRemoved
+                    ? 'bg-red-400'
+                    : 'bg-green-400';
                   markerElement = (
                     <div
                       key={index}
@@ -293,7 +306,9 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
                       style={{ top: `${percentage}%` }}
                       title={`第${index + 1}行: ${hasRemoved ? '删除' : '新增'}`}
                       onClick={() => {
-                        const contentEl = document.getElementById('unified-diff-content');
+                        const contentEl = document.getElementById(
+                          'unified-diff-content'
+                        );
                         const lineHeight = 18;
                         if (contentEl) {
                           contentEl.scrollTop = index * lineHeight;
@@ -304,11 +319,12 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
                 }
               } else {
                 // 单一类型的变化
-                const markerColor = line.type === 'removed'
-                  ? 'bg-red-400'
-                  : line.type === 'added'
-                  ? 'bg-green-400'
-                  : 'bg-blue-400';
+                const markerColor =
+                  line.type === 'removed'
+                    ? 'bg-red-400'
+                    : line.type === 'added'
+                      ? 'bg-green-400'
+                      : 'bg-blue-400';
 
                 markerElement = (
                   <div
@@ -317,7 +333,9 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
                     style={{ top: `${percentage}%` }}
                     title={`第${index + 1}行: ${line.type === 'removed' ? '删除' : line.type === 'added' ? '新增' : line.type === 'context' ? '上下文' : '修改'}`}
                     onClick={() => {
-                      const contentEl = document.getElementById('unified-diff-content');
+                      const contentEl = document.getElementById(
+                        'unified-diff-content'
+                      );
                       const lineHeight = 18;
                       if (contentEl) {
                         contentEl.scrollTop = index * lineHeight;
@@ -336,7 +354,7 @@ const JSDiffViewer: React.FC<JSDiffViewerProps> = ({ className = '' }) => {
   }, []);
 
   return (
-    <div className={`max-w-7xl mx-auto p-6 ${className}`}>
+    <div className={`p-6 ${className}`}>
       <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
         JSDiff 专业差异比较工具
       </h1>

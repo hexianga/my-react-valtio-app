@@ -176,7 +176,7 @@ const JsonDiffViewer: React.FC<JsonDiffViewerProps> = ({ className = '' }) => {
   console.log(snap);
 
   return (
-    <div className={`max-w-6xl mx-auto p-6 ${className}`}>
+    <div className={`p-6 ${className}`}>
       <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
         JSON Diff 比较工具
       </h1>
