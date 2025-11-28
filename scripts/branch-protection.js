@@ -23,7 +23,7 @@ const readline = require('readline');
 
 // 配置受保护的分支规则
 const PROTECTED_BRANCHES = {
-  exact: ['master', 'main'], // 精确匹配的分支名
+  exact: ['master'], // 精确匹配的分支名
   prefixes: ['release/', 'release-'], // 前缀匹配的分支名
 };
 
