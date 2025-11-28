@@ -10,6 +10,8 @@ import JSDiffPage from './pages/JSDiffPage';
 import PerformancePage from './pages/PerformancePage';
 import TypeErrorPage from './pages/TypeErrorPage';
 import JsonParserPage from './pages/JsonParserPage';
+import BlogListPage from './pages/BlogListPage';
+import BlogDetailPage from './pages/BlogDetailPage';
 import WebVitalsDisplay from './components/WebVitalsDisplay';
 
 /**
@@ -85,6 +87,8 @@ const App: React.FC = () => {
             <Route path="/performance" element={<PerformancePage />} />
             <Route path="/type-error" element={<TypeErrorPage />} />
             <Route path="/json-parser" element={<JsonParserPage />} />
+            <Route path="/blog" element={<BlogListPage />} />
+            <Route path="/blog/:filename" element={<BlogDetailPage />} />
             {/* 404 页面 */}
             <Route
               path="*"

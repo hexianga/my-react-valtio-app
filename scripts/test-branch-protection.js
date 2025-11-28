@@ -14,14 +14,12 @@ const path = require('path');
 const testCases = [
   {
     name: '✅ 允许推送到 feature 分支',
-    input:
-      'refs/heads/feature/new-feature 67890abcdef refs/heads/feature/new-feature 12345abcdef\n',
+    input: 'refs/heads/feature/new-feature 67890abcdef refs/heads/feature/new-feature 12345abcdef\n',
     shouldPass: true,
   },
   {
     name: '❌ 禁止推送到 master 分支',
-    input:
-      'refs/heads/feature/test 67890abcdef refs/heads/master 12345abcdef\n',
+    input: 'refs/heads/feature/test 67890abcdef refs/heads/master 12345abcdef\n',
     shouldPass: false,
   },
   {
@@ -31,26 +29,22 @@ const testCases = [
   },
   {
     name: '❌ 禁止推送到 release/v1.0 分支',
-    input:
-      'refs/heads/feature/test 67890abcdef refs/heads/release/v1.0 12345abcdef\n',
+    input: 'refs/heads/feature/test 67890abcdef refs/heads/release/v1.0 12345abcdef\n',
     shouldPass: false,
   },
   {
     name: '❌ 禁止推送到 release-1.0 分支',
-    input:
-      'refs/heads/feature/test 67890abcdef refs/heads/release-1.0 12345abcdef\n',
+    input: 'refs/heads/feature/test 67890abcdef refs/heads/release-1.0 12345abcdef\n',
     shouldPass: false,
   },
   {
     name: '✅ 允许推送到 develop 分支',
-    input:
-      'refs/heads/feature/test 67890abcdef refs/heads/develop 12345abcdef\n',
+    input: 'refs/heads/feature/test 67890abcdef refs/heads/develop 12345abcdef\n',
     shouldPass: true,
   },
   {
     name: '✅ 允许推送到 hotfix 分支',
-    input:
-      'refs/heads/hotfix/bug-fix 67890abcdef refs/heads/hotfix/bug-fix 12345abcdef\n',
+    input: 'refs/heads/hotfix/bug-fix 67890abcdef refs/heads/hotfix/bug-fix 12345abcdef\n',
     shouldPass: true,
   },
 ];
@@ -69,13 +63,9 @@ const colors = {
  * 运行单个测试用例
  */
 function runTest(testCase) {
-  return new Promise(resolve => {
-    console.log(
-      `\n${colors.cyan}${colors.bold}测试: ${testCase.name}${colors.reset}`
-    );
-    console.log(
-      `${colors.yellow}输入: ${testCase.input.trim()}${colors.reset}`
-    );
+  return new Promise((resolve) => {
+    console.log(`\n${colors.cyan}${colors.bold}测试: ${testCase.name}${colors.reset}`);
+    console.log(`${colors.yellow}输入: ${testCase.input.trim()}${colors.reset}`);
 
     const scriptPath = path.join(__dirname, 'branch-protection.js');
     const child = spawn('node', [scriptPath], {
@@ -85,15 +75,15 @@ function runTest(testCase) {
     let stdout = '';
     let stderr = '';
 
-    child.stdout.on('data', data => {
+    child.stdout.on('data', (data) => {
       stdout += data.toString();
     });
 
-    child.stderr.on('data', data => {
+    child.stderr.on('data', (data) => {
       stderr += data.toString();
     });
 
-    child.on('close', code => {
+    child.on('close', (code) => {
       const passed = (code === 0) === testCase.shouldPass;
 
       if (stdout) console.log(stdout);
@@ -139,17 +129,15 @@ async function runAllTests() {
   }
 
   // 输出测试总结
-  console.log(`\n${colors.bold}${colors.cyan}${'═'.repeat(60)}${colors.reset}`);
+  console.log('\n' + colors.bold + colors.cyan + '═'.repeat(60) + colors.reset);
   console.log(`${colors.bold}测试总结:${colors.reset}`);
   console.log(`  ${colors.green}✓ 通过: ${passedCount}${colors.reset}`);
   console.log(`  ${colors.red}✗ 失败: ${failedCount}${colors.reset}`);
   console.log(`  总计: ${passedCount + failedCount}`);
-  console.log(`${colors.cyan + '═'.repeat(60) + colors.reset}\n`);
+  console.log(colors.cyan + '═'.repeat(60) + colors.reset + '\n');
 
   if (failedCount === 0) {
-    console.log(
-      `${colors.green}${colors.bold}🎉 所有测试通过！${colors.reset}\n`
-    );
+    console.log(`${colors.green}${colors.bold}🎉 所有测试通过！${colors.reset}\n`);
     process.exit(0);
   } else {
     console.log(`${colors.red}${colors.bold}❌ 有测试失败${colors.reset}\n`);
@@ -158,7 +146,7 @@ async function runAllTests() {
 }
 
 // 运行测试
-runAllTests().catch(error => {
+runAllTests().catch((error) => {
   console.error(`${colors.red}测试执行出错: ${error.message}${colors.reset}`);
   process.exit(1);
 });
