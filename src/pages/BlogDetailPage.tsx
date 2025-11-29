@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import { ArrowLeftOutlined, FileTextOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import 'highlight.js/styles/github-dark.css';
+import 'highlight.js/styles/atom-one-dark.css';
 
 /**
  * Blog 详情页面
@@ -31,8 +31,11 @@ const BlogDetailPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
+        // 兼容不带 .md 后缀的路由参数
+        const resolvedFilename = filename.endsWith('.md') ? filename : `${filename}.md`;
+
         // 动态导入 Markdown 文件
-        const markdownModule = await import(`../../docs/${filename}`);
+        const markdownModule = await import(`../../docs/${resolvedFilename}`);
         const response = await fetch(markdownModule.default);
         const text = await response.text();
 
@@ -44,7 +47,7 @@ const BlogDetailPage: React.FC = () => {
           setTitle(match[1].trim());
         } else {
           // 从文件名提取标题
-          const titleFromFilename = filename
+          const titleFromFilename = resolvedFilename
             .replace('.md', '')
             .replace(/_/g, ' ')
             .replace(/-/g, ' ')
@@ -103,7 +106,7 @@ const BlogDetailPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
         {/* 返回按钮 */}
         <Link
           to="/blog"
@@ -120,7 +123,7 @@ const BlogDetailPage: React.FC = () => {
           <div className="flex items-center space-x-6 text-sm text-gray-500">
             <span className="flex items-center">
               <FileTextOutlined className="mr-2" />
-              {filename}
+              {filename?.endsWith('.md') ? filename : `${filename}.md`}
             </span>
             <span className="flex items-center">
               <ClockCircleOutlined className="mr-2" />
@@ -138,8 +141,8 @@ const BlogDetailPage: React.FC = () => {
             prose-h3:text-xl prose-h3:mb-2 prose-h3:mt-4
             prose-p:text-gray-700 prose-p:leading-relaxed
             prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
-            prose-code:text-pink-600 prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
-            prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:p-4 prose-pre:rounded-lg prose-pre:overflow-x-auto
+            prose-pre:bg-transparent prose-pre:p-0 prose-pre:rounded-none prose-pre:overflow-x-auto
+            prose-code:bg-transparent prose-code:p-0 prose-code:rounded-none
             prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 prose-blockquote:p-4 prose-blockquote:italic
             prose-ul:list-disc prose-ul:pl-6 prose-ul:my-4
             prose-ol:list-decimal prose-ol:pl-6 prose-ol:my-4
@@ -158,12 +161,16 @@ const BlogDetailPage: React.FC = () => {
               components={{
                 // 自定义代码块渲染
                 code({ inline, className, children, ...props }: any) {
-                  return inline ? (
-                    <code className={className} {...props}>
-                      {children}
-                    </code>
-                  ) : (
-                    <code className={className} {...props}>
+                  if (inline) {
+                    return (
+                      <code className="bg-gray-100 text-pink-600 px-1 py-0.5 rounded text-sm" {...props}>
+                        {children}
+                      </code>
+                    );
+                  }
+                  // 代码块交给 highlight.js 主题处理，避免白底冲突
+                  return (
+                    <code className={`not-prose ${className || ''}`} {...props}>
                       {children}
                     </code>
                   );
