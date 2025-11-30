@@ -1,5 +1,4 @@
 import React from 'react';
-import React from 'react';
 import { captureMessage, captureError } from '../utils/sentry';
 import { useWebVitals, usePerformanceScore } from '../hooks';
 
@@ -9,7 +8,7 @@ import { useWebVitals, usePerformanceScore } from '../hooks';
  */
 const About: React.FC = () => {
   // Web Vitals 性能监控
-  const { metrics, loading: vitalsLoading, getPerformanceSummary, formatMetricValue } = useWebVitals();
+  const { metrics, loading: vitalsLoading, formatMetricValue } = useWebVitals();
   const { score: performanceScore, loading: scoreLoading } = usePerformanceScore();
   const handleTestError = () => {
     try {

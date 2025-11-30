@@ -1,18 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import MarkdownRenderer from '../components/MarkdownRenderer';
 import PageLoading from '../components/PageLoading';
 import ErrorState from '../components/ErrorState';
-import { ArrowLeftOutlined, FileTextOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import 'highlight.js/styles/atom-one-dark.css';
 
-/**
- * Blog 详情页面
- * 渲染单个 Markdown 文件的内容
- */
-const BlogDetailPage: React.FC = () => {
-  const { filename } = useParams<{ filename: string }>();
-  const navigate = useNavigate();
+const ResumePage: React.FC = () => {
   const [content, setContent] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,51 +12,31 @@ const BlogDetailPage: React.FC = () => {
 
   useEffect(() => {
     const loadMarkdown = async () => {
-      if (!filename) {
-        setError('文件名不存在');
-        setLoading(false);
-        return;
-      }
-
       try {
         setLoading(true);
         setError(null);
 
-        // 兼容不带 .md 后缀的路由参数
-        const resolvedFilename = filename.endsWith('.md') ? filename : `${filename}.md`;
-
-        // 动态导入 Markdown 文件
-        const markdownModule = await import(`../../docs/${resolvedFilename}`);
+        const markdownModule = await import('../../docs/RESUME.md');
         const response = await fetch(markdownModule.default);
         const text = await response.text();
 
         setContent(text);
 
-        // 从内容中提取标题
         const match = text.match(/^#\s+(.+)$/m);
         if (match && match[1]) {
           setTitle(match[1].trim());
         } else {
-          // 从文件名提取标题
-          const titleFromFilename = resolvedFilename
-            .replace('.md', '')
-            .replace(/_/g, ' ')
-            .replace(/-/g, ' ')
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' ');
-          setTitle(titleFromFilename);
+          setTitle('个人简历');
         }
-      } catch (err) {
-        console.error('加载 Markdown 文件失败:', err);
-        setError('无法加载文章内容，请检查文件是否存在');
+      } catch {
+        setError('无法加载简历内容，请检查文件是否存在');
       } finally {
         setLoading(false);
       }
     };
 
     loadMarkdown();
-  }, [filename]);
+  }, []);
 
   if (loading) {
     return <PageLoading />;
@@ -74,12 +46,7 @@ const BlogDetailPage: React.FC = () => {
     return (
       <ErrorState
         message={error}
-        actions={
-          <>
-            <button onClick={() => navigate('/blog')} className="btn btn-primary">返回列表</button>
-            <button onClick={() => window.location.reload()} className="btn btn-secondary">重试</button>
-          </>
-        }
+        actions={<button onClick={() => window.location.reload()} className="btn btn-primary">重试</button>}
       />
     );
   }
@@ -87,32 +54,10 @@ const BlogDetailPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
-        {/* 返回按钮 */}
-        <Link
-          to="/blog"
-          className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-6 transition-colors"
-        >
-          <ArrowLeftOutlined className="mr-2" />
-          返回文章列表
-        </Link>
-
-        {/* 文章头部 */}
         <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">{title}</h1>
-
-          <div className="flex items-center space-x-6 text-sm text-gray-500">
-            <span className="flex items-center">
-              <FileTextOutlined className="mr-2" />
-              {filename?.endsWith('.md') ? filename : `${filename}.md`}
-            </span>
-            <span className="flex items-center">
-              <ClockCircleOutlined className="mr-2" />
-              Markdown 文档
-            </span>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
         </div>
 
-        {/* Markdown 内容 */}
         <div className="bg-white rounded-lg shadow-sm p-8">
           <article className="prose prose-lg max-w-none
             prose-headings:font-bold
@@ -138,20 +83,9 @@ const BlogDetailPage: React.FC = () => {
             <MarkdownRenderer content={content} />
           </article>
         </div>
-
-        {/* 底部导航 */}
-        <div className="mt-8 flex justify-center">
-          <Link
-            to="/blog"
-            className="btn btn-primary"
-          >
-            <ArrowLeftOutlined className="mr-2" />
-            返回文章列表
-          </Link>
-        </div>
       </div>
     </div>
   );
 };
 
-export default BlogDetailPage;
+export default ResumePage;
