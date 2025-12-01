@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FileTextOutlined, FolderOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  FileTextOutlined,
+  FolderOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 
 interface BlogPost {
   id: string;
@@ -22,20 +26,32 @@ const BlogListPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   // 从文件名提取标题和分类
-  const parseFilename = (filename: string): { title: string; category: string } => {
+  const parseFilename = (
+    filename: string
+  ): { title: string; category: string } => {
     const nameWithoutExt = filename.replace('.md', '');
 
     // 根据文件名前缀判断分类
     let category = '其他';
     if (nameWithoutExt.includes('API') || nameWithoutExt.includes('AXIOS')) {
       category = 'API 开发';
-    } else if (nameWithoutExt.includes('GIT') || nameWithoutExt.includes('HOOK') || nameWithoutExt.includes('BRANCH')) {
+    } else if (
+      nameWithoutExt.includes('GIT') ||
+      nameWithoutExt.includes('HOOK') ||
+      nameWithoutExt.includes('BRANCH')
+    ) {
       category = 'Git 工具';
     } else if (nameWithoutExt.includes('REQUEST')) {
       category = '请求处理';
-    } else if (nameWithoutExt.includes('ENV') || nameWithoutExt.includes('CONFIG')) {
+    } else if (
+      nameWithoutExt.includes('ENV') ||
+      nameWithoutExt.includes('CONFIG')
+    ) {
       category = '配置';
-    } else if (nameWithoutExt.includes('JSDIFF') || nameWithoutExt.includes('style')) {
+    } else if (
+      nameWithoutExt.includes('JSDIFF') ||
+      nameWithoutExt.includes('style')
+    ) {
       category = '工具库';
     }
 
@@ -51,7 +67,9 @@ const BlogListPage: React.FC = () => {
   };
 
   // 从 Markdown 内容中提取标题
-  const extractTitleFromMarkdown = async (filename: string): Promise<string> => {
+  const extractTitleFromMarkdown = async (
+    filename: string
+  ): Promise<string> => {
     try {
       // 动态导入 Markdown 文件
       const markdownModule = await import(`../../docs/${filename}`);
@@ -87,6 +105,9 @@ const BlogListPage: React.FC = () => {
           'BRANCH_PROTECTION.md',
           'ENV_CONFIG.md',
           'JSDIFF_README.md',
+          'RESUME1.md',
+          'RESUME.md',
+          'RESUME_STRUCTURED.md',
           'NATIVE_GIT_HOOKS_GUIDE.md',
           'REQUESTID_SUMMARY.md',
           'REQUEST_ID_GUIDE.md',
@@ -133,9 +154,10 @@ const BlogListPage: React.FC = () => {
 
     // 按搜索词筛选
     if (searchTerm) {
-      filtered = filtered.filter(post =>
-        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.filename.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        post =>
+          post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          post.filename.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -143,7 +165,10 @@ const BlogListPage: React.FC = () => {
   }, [searchTerm, selectedCategory, posts]);
 
   // 获取所有分类
-  const categories = ['all', ...Array.from(new Set(posts.map(post => post.category)))];
+  const categories = [
+    'all',
+    ...Array.from(new Set(posts.map(post => post.category))),
+  ];
 
   if (loading) {
     return (
@@ -164,9 +189,7 @@ const BlogListPage: React.FC = () => {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             📚 技术文档博客
           </h1>
-          <p className="text-lg text-gray-600">
-            浏览和学习项目中的技术文档
-          </p>
+          <p className="text-lg text-gray-600">浏览和学习项目中的技术文档</p>
         </div>
 
         {/* 搜索和筛选 */}
@@ -179,7 +202,7 @@ const BlogListPage: React.FC = () => {
                 type="text"
                 placeholder="搜索文章标题或文件名..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -189,7 +212,7 @@ const BlogListPage: React.FC = () => {
               <FolderOutlined className="text-gray-400" />
               <select
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                onChange={e => setSelectedCategory(e.target.value)}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 {categories.map(category => (
@@ -203,7 +226,11 @@ const BlogListPage: React.FC = () => {
 
           {/* 统计信息 */}
           <div className="mt-4 text-sm text-gray-600">
-            找到 <span className="font-semibold text-blue-600">{filteredPosts.length}</span> 篇文章
+            找到{' '}
+            <span className="font-semibold text-blue-600">
+              {filteredPosts.length}
+            </span>{' '}
+            篇文章
             {searchTerm && ` (搜索: "${searchTerm}")`}
             {selectedCategory !== 'all' && ` (分类: ${selectedCategory})`}
           </div>
@@ -216,13 +243,11 @@ const BlogListPage: React.FC = () => {
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               没有找到文章
             </h3>
-            <p className="text-gray-600">
-              尝试调整搜索条件或选择其他分类
-            </p>
+            <p className="text-gray-600">尝试调整搜索条件或选择其他分类</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPosts.map((post) => (
+            {filteredPosts.map(post => (
               <Link
                 key={post.id}
                 to={`/blog/${encodeURIComponent(post.filename.replace('.md', ''))}`}

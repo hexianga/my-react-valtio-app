@@ -16,7 +16,7 @@ const ResumePage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const markdownModule = await import('../../docs/RESUME.md');
+        const markdownModule = await import('../../docs/RESUME1.md');
         const response = await fetch(markdownModule.default);
         const text = await response.text();
 
@@ -46,7 +46,14 @@ const ResumePage: React.FC = () => {
     return (
       <ErrorState
         message={error}
-        actions={<button onClick={() => window.location.reload()} className="btn btn-primary">重试</button>}
+        actions={
+          <button
+            onClick={() => window.location.reload()}
+            className="btn btn-primary"
+          >
+            重试
+          </button>
+        }
       />
     );
   }
@@ -59,7 +66,8 @@ const ResumePage: React.FC = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-8">
-          <article className="prose prose-lg max-w-none
+          <article
+            className="prose prose-lg max-w-none
             prose-headings:font-bold
             prose-h1:text-3xl prose-h1:mb-4 prose-h1:mt-8
             prose-h2:text-2xl prose-h2:mb-3 prose-h2:mt-6 prose-h2:border-b prose-h2:pb-2
@@ -79,7 +87,8 @@ const ResumePage: React.FC = () => {
             prose-hr:border-gray-300 prose-hr:my-8
             prose-strong:text-gray-900 prose-strong:font-semibold
             prose-em:text-gray-700 prose-em:italic
-          ">
+          "
+          >
             <MarkdownRenderer content={content} />
           </article>
         </div>
