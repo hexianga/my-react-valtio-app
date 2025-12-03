@@ -18,6 +18,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { path: '/about', label: '关于', icon: 'ℹ️' },
     { path: '/blog', label: '技术博客', icon: '📚' },
     { path: '/resume', label: '简历', icon: '📄' },
+    { path: '/federation', label: 'Module Federation', icon: '🧩' },
     { path: '/form', label: '表单示例', icon: '📝' },
     { path: '/json-diff', label: 'JSON Diff', icon: '🔍' },
     { path: '/jsdiff', label: 'JSDiff Pro', icon: '⚡' },

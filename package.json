@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack serve --config config/webpack.dev.js",
+    "dev:remote": "cross-env NODE_ENV=development webpack serve --config config/webpack.remote.dev.js",
     "build": "npm run build:prod",
     "build:dev": "cross-env NODE_ENV=development webpack --config config/webpack.dev.js",
     "build:test": "cross-env NODE_ENV=test webpack --config config/webpack.prod.js",

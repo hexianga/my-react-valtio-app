@@ -48,6 +48,22 @@ module.exports = merge(commonConfig, {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development'),
     }),
+    // Module Federation: 同仓库自联邦 demo（暴露与消费在同一应用）
+    new webpack.container.ModuleFederationPlugin({
+      name: 'myApp',
+      filename: 'remoteEntry.js',
+      exposes: {
+        './RemoteHello': path.resolve(__dirname, '../src/remote/RemoteHello'),
+      },
+      remotes: {
+        myApp: 'myApp@http://localhost:' + (process.env.PORT || 3000) + '/remoteEntry.js',
+        remoteApp: 'remoteApp@http://localhost:3001/remoteEntry.js',
+      },
+      shared: {
+        react: { singleton: true, requiredVersion: require('../package.json').dependencies.react },
+        'react-dom': { singleton: true, requiredVersion: require('../package.json').dependencies['react-dom'] },
+      },
+    }),
   ],
   devServer: {
     static: {

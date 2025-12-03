@@ -68,6 +68,21 @@ module.exports = merge(commonConfig, {
         minifyURLs: true,
       },
     }),
+    // Module Federation（生产环境）
+    new webpack.container.ModuleFederationPlugin({
+      name: 'myApp',
+      filename: 'remoteEntry.js',
+      exposes: {
+        './RemoteHello': path.resolve(__dirname, '../src/remote/RemoteHello'),
+      },
+      remotes: {
+        myApp: 'myApp@' + (process.env.CDN_URL || '/static/') + 'remoteEntry.js',
+      },
+      shared: {
+        react: { singleton: true, requiredVersion: require('../package.json').dependencies.react },
+        'react-dom': { singleton: true, requiredVersion: require('../package.json').dependencies['react-dom'] },
+      },
+    }),
   ],
   optimization: {
     minimize: true,

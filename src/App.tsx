@@ -13,6 +13,7 @@ import JsonParserPage from './pages/JsonParserPage';
 import BlogListPage from './pages/BlogListPage';
 import BlogDetailPage from './pages/BlogDetailPage';
 import ResumePage from './pages/ResumePage';
+import FederationDemoPage from './pages/FederationDemoPage';
 import WebVitalsDisplay from './components/WebVitalsDisplay';
 
 /**
@@ -89,6 +90,7 @@ const App: React.FC = () => {
             <Route path="/type-error" element={<TypeErrorPage />} />
             <Route path="/json-parser" element={<JsonParserPage />} />
             <Route path="/resume" element={<ResumePage />} />
+            <Route path="/federation" element={<FederationDemoPage />} />
             <Route path="/blog" element={<BlogListPage />} />
             <Route path="/blog/:filename" element={<BlogDetailPage />} />
             {/* 404 页面 */}
